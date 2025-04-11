@@ -1,29 +1,64 @@
-<mat-form-field appearance="outline" class="full-width">
-  <mat-label>Buscar empresas</mat-label>
-  <input
-    type="text"
-    matInput
-    [formControl]="searchCtrl"
-    [matAutocomplete]="auto"
-    placeholder="Escribe al menos 3 letras..." />
-  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addEmpresa($event.option.value)">
-    <mat-option *ngFor="let empresa of resultados" [value]="empresa">
-      {{ empresa }}
-    </mat-option>
-  </mat-autocomplete>
-</mat-form-field>
+<form [formGroup]="formulario" (ngSubmit)="onSubmit()" class="formulario">
 
-<mat-chip-listbox class="full-width" multiple>
-  <mat-chip-option
-    *ngFor="let empresa of empresasSeleccionadas"
-    [selected]="true"
-    (removed)="removeEmpresa(empresa)">
-    {{ empresa }}
-    <button matChipRemove>
-      <mat-icon>cancel</mat-icon>
-    </button>
-  </mat-chip-option>
-</mat-chip-listbox>
+  <!-- Fila horizontal de dos campos -->
+  <div class="form-row-horizontal">
+    <mat-form-field class="field-50" appearance="outline">
+      <mat-label>Buscar empresas</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="empresaSearch"
+        [matAutocomplete]="auto"
+        placeholder="Escribe al menos 3 letras..."
+      />
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addEmpresa($event)">
+        <mat-option *ngFor="let empresa of resultados" [value]="empresa">
+          {{ empresa }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field class="field-50" appearance="fill">
+      <mat-label>Años</mat-label>
+      <mat-select [formControl]="anios" multiple>
+        <mat-option *ngFor="let year of listaAnios" [value]="year">{{ year }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Chips seleccionadas -->
+  <label class="mat-label">Empresas seleccionadas</label>
+  <mat-chip-listbox class="full-width" multiple>
+    <mat-chip-option
+      *ngFor="let empresa of empresas.value"
+      [selected]="true"
+      (removed)="removeEmpresa(empresa)">
+      {{ empresa }}
+      <button matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-option>
+  </mat-chip-listbox>
+  <div class="error" *ngIf="empresas.invalid && empresas.touched">
+    Debes seleccionar al menos una empresa.
+  </div>
+
+  <!-- Error para años -->
+  <div class="error" *ngIf="anios.invalid && anios.touched">
+    Selecciona al menos un año.
+  </div>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="formulario.invalid">
+    Enviar
+  </button>
+
+  <div class="mt-3" *ngIf="resultado">
+    <h4>Datos enviados:</h4>
+    <pre>{{ resultado | json }}</pre>
+  </div>
+</form>
+
+
 
 <div class="dashboard-grid">
     <!-- Gráfico de líneas: Importes anuales por empresa -->

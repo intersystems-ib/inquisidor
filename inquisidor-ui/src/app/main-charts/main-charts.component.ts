@@ -2,14 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { LegendPosition, NgxChartsModule } from '@swimlane/ngx-charts';
 import { IrisService } from '../services/iris.service';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, debounceTime, distinctUntilChanged, from, map, Observable, of, Subject, Subscription, switchMap, tap } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipGrid, MatChipListbox, MatChipOption, MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-main-charts',
@@ -21,15 +23,22 @@ import { MatOptionModule } from '@angular/material/core';
     MatAutocompleteModule,
     MatOptionModule,
     MatChipListbox,
-    MatChipOption],
+    MatChipOption,
+    MatButtonModule,
+    MatSelectModule],
   templateUrl: './main-charts.component.html',
   styleUrl: './main-charts.component.scss'
 })
 export class MainChartsComponent implements OnInit{
 
-  searchCtrl = new FormControl('');
+  formulario: FormGroup;
+  empresaSearch = new FormControl('');
+  empresas = new FormControl<string[]>([], Validators.required);
+  anios = new FormControl<number[]>([], Validators.required);
+
   resultados: string[] = [];
-  empresasSeleccionadas: string[] = [];
+  resultado: any = null;
+  listaAnios: number[] = [];
 
   private searchSub: Subscription;
 
@@ -39,8 +48,6 @@ export class MainChartsComponent implements OnInit{
 
   loading = false;
   legendPosition: LegendPosition = LegendPosition.Below
-  ganadores: any[]  = []
-  anyos = []
 
   lineChartData = [
     {
@@ -103,9 +110,20 @@ export class MainChartsComponent implements OnInit{
     { name: 'NTT Data', value: 6650000 }
   ];
 
-  constructor(private irisService: IrisService
+  constructor(private irisService: IrisService,
+    private fb: FormBuilder
   ) {
-    this.searchSub = this.searchCtrl.valueChanges
+
+    const currentYear = new Date().getFullYear();
+    this.listaAnios = Array.from({ length: currentYear - 2012 + 1 }, (_, i) => 2012 + i);
+
+    this.formulario = this.fb.group({
+      empresaSearch: this.empresaSearch,
+      empresas: this.empresas,
+      anios: this.anios
+    });
+    
+    this.searchSub = this.empresaSearch.valueChanges
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
@@ -114,10 +132,7 @@ export class MainChartsComponent implements OnInit{
           return from(this.irisService.getWinners(term)).pipe(
             catchError(() => of([]))
           );
-        }),
-        map(resultados =>
-          resultados.filter((r: string) => !this.empresasSeleccionadas.includes(r))
-        )
+        })
       )
       .subscribe(res => {
         this.resultados = res;
@@ -129,29 +144,31 @@ export class MainChartsComponent implements OnInit{
     this.loading = false;
   }
 
-  addEmpresa(nombre: string) {
-    if (nombre && !this.empresasSeleccionadas.includes(nombre)) {
-      this.empresasSeleccionadas.push(nombre);
-      this.searchCtrl.setValue('');
+  addEmpresa(event: MatAutocompleteSelectedEvent) {
+    const nombre = event.option.value;
+    if (this.empresas.value != null && !this.empresas.value.includes(nombre)) {
+      this.empresas.setValue([...this.empresas.value, nombre]);
     }
+    this.empresaSearch.setValue('');
   }
 
   removeEmpresa(nombre: string) {
-    this.empresasSeleccionadas = this.empresasSeleccionadas.filter(e => e !== nombre);
+    if (this.empresas.value != null){
+      this.empresas.setValue(this.empresas.value.filter(e => e !== nombre));
+    }
+  }
+
+  onSubmit() {
+    if (this.formulario.valid) {
+      this.resultado = {
+        empresas: this.empresas.value,
+        anios: this.anios.value
+      };
+    }
   }
 
   ngOnDestroy(): void {
     this.searchSub.unsubscribe();
   }
   
-  getYears() {
-      this.irisService.getYears().subscribe({
-        next: res => {  
-          this.getYears = res;
-        },
-        error: err => {
-          console.error(JSON.stringify(err));
-        }
-      });
-    }
 }
