@@ -1,0 +1,21 @@
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+  }
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .text-center {
+    text-align: center;
+  }

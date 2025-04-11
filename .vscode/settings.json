@@ -1,6 +1,6 @@
 {
     "objectscript.conn": {
-        "server": "docker",
+        "server": "webgateway",
         "ns": "INQUISIDOR",
         "active": true
     }

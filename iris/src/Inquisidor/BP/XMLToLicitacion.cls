@@ -7,7 +7,7 @@ Method OnRequest(pRequest As Ens.StreamContainer, Output pResponse As Ens.Respon
 
     set resultXML = ..ReadXML(filename)
     set resultEmbeddings = ""
-    //set resultEmbeddings = ..GenerateEmbeddings()
+    set resultEmbeddings = ..GenerateEmbeddings()
     
     Quit $$$OK
 }
@@ -43,7 +43,7 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                                                 licitacion["contratante"] = name.text
                                         elif contractorDetails.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}WebsiteURI":
                                             licitacion["urlcontratante"] = contractorDetails.text
-                        elif detailTags.tag == "{urn:dgpe:names:draft:codice-place-ext:schema:xsd:CommonAggregateComponents-2}ContractFolderStatusCode":
+                        elif detailTags.tag == "{urn:dgpe:names:draft:codice-place-ext:schema:xsd:CommonBasicComponents-2}ContractFolderStatusCode":
                             licitacion["estado"] = detailTags.text
                         elif detailTags.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}ProcurementProject":
                             for infoProcurement in detailTags:
@@ -102,7 +102,7 @@ Method GenerateEmbeddings() As %String [ Language = python ]
     import sentence_transformers
 
     if not os.path.isdir('/iris-shared/model/'):
-        model = sentence_transformers.SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')            
+        model = sentence_transformers.SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')            
         model.save('/iris-shared/model/')
 
     flagLoop = True

@@ -1,0 +1,42 @@
+.sidenav-container {
+    height: 100vh;
+}
+
+.custom-toolbar {
+    background-color: #1A3665; /* Azul oscuro */
+    color: #ffffff;
+}
+
+.custom-sidenav {
+    background-color: #3366CC; /* Azul intermedio */
+    width: 220px;
+    border-radius: 0; /* Elimina esquinas redondeadas */
+}
+
+.mat-mdc-list-item:hover {
+    border-radius: 0; /* Elimina esquinas redondeadas */
+}
+
+.sidenav-link{
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.white-icon {
+    color: white;
+}
+
+.main-content {
+    max-width: 100vw;
+    min-height: 100vh;
+}
+
+mat-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.ms-3 {
+    margin-left: 1rem;
+}

@@ -2,6 +2,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+export interface Response {
+  access_token: string,
+  refresh_token: string,
+  sub: string,
+  iat: string,
+  exp: string
+}
+
 const AUTH_API = 'api/inquisidor/';
 
 let httpOptions = {
