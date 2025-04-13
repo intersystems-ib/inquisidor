@@ -27,6 +27,8 @@ Property Estado As %String;
 
 Property Ganador As %String(MAXLEN = 200);
 
+Property GanadorNIF As %String(MAXLEN = 200);
+
 Property ImporteGanador As %Numeric(STORAGEDEFAULT = "columnar");
 
 Property ImporteGanadorSinImpuestos As %Numeric(STORAGEDEFAULT = "columnar");
@@ -38,6 +40,8 @@ Property Localizacion As %String(MAXLEN = 200);
 Index IndexContratante On Contratante;
 
 Index IndexGanador On Ganador;
+
+Index IndexGanadorNIF On GanadorNIF;
 
 Index IndexClasificacion On Clasificacion;
 
@@ -86,6 +90,9 @@ Storage Default
 </Value>
 <Value name="13">
 <Value>Localizacion</Value>
+</Value>
+<Value name="14">
+<Value>GanadorNIF</Value>
 </Value>
 </Data>
 <Data name="_CDM_ImporteGanador">

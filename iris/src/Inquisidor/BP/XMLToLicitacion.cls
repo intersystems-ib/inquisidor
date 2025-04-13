@@ -73,6 +73,10 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                                             for detailName in detailWinner:
                                                 if detailName.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}Name":
                                                     licitacion["ganador"] = detailName.text
+                                        elif detailWinner.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}PartyIdentification":
+                                            for detailName in detailWinner:
+                                                if detailName.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}ID":
+                                                    licitacion["ganadornif"] = detailName.text
                                 elif infoResult.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}AwardedTenderedProject":
                                     for detailTender in infoResult:
                                         if detailTender.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}LegalMonetaryTotal":
@@ -84,9 +88,9 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", "Terminado mapeo "+licitacion["titulo"])
             if licitacion.get("importeganador") is not None and licitacion.get("importeganador") is not "":
                 iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", "Lanzando insert "+licitacion["titulo"])
-                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?)")
+                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?,?)")
                 try:
-                    rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"])
+                    rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"], licitacion["ganadornif"])
                 except Exception as err:
                     iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", repr(err))
         return "Success"

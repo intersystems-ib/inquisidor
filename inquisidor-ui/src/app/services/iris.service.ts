@@ -33,4 +33,10 @@ export class IrisService {
     )
   }
 
+  getStatistics(filters: any): Observable<any> {
+    return this.http.post<Response>(
+      IRIS_API + 'getStatistics', filters, httpOptions
+    )
+  }
+
 }

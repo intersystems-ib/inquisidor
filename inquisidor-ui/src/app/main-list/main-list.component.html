@@ -1,52 +1,90 @@
-<div class="container mt-4">
-  <mat-form-field appearance="outline" class="w-100 mb-3">
-    <mat-label>Buscar</mat-label>
-    <input matInput (keyup)="applyFilter($event)" placeholder="Filtra por cualquier campo..." />
-  </mat-form-field>
+<form [formGroup]="formulario" (ngSubmit)="onSubmit()" class="formulario">
+  <div class="form-row-horizontal">
+    <mat-form-field class="field-50" appearance="outline">
+      <mat-label>Buscar empresas</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="empresaSearch"
+        [matAutocomplete]="auto"
+        placeholder="Escribe al menos 3 letras..."
+      />
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addEmpresa($event)">
+        <mat-option *ngFor="let empresa of resultados" [value]="empresa">
+          {{ empresa.Name }} — {{ empresa.NIF }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
 
-  <mat-card class="mat-elevation-z4">
-    <table mat-table [dataSource]="dataSource" matSort class="mat-table">
+    <mat-form-field appearance="outline" class="field-50">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="titulo" placeholder="Filtra por cualquier campo..." />
+    </mat-form-field>
+  </div>
+  <!-- Chips seleccionadas -->
+  <label class="mat-label">Empresas seleccionadas</label>
+  <mat-chip-listbox class="full-width" multiple>
+    <mat-chip-option
+      *ngFor="let empresa of empresas.value"
+      [selected]="true"
+      (removed)="removeEmpresa(empresa.NIF)">
+      {{ empresa.Name }} ({{ empresa.NIF }})
+      <button matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-option>
+  </mat-chip-listbox>
+  <div class="error" *ngIf="titulo.invalid && titulo.touched">
+    Debes introducir un título.
+  </div>
 
-      <!-- Título -->
-      <ng-container matColumnDef="titulo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Título </th>
-        <td mat-cell *matCellDef="let elemento"><a href="{{ elemento.URL }}">{{ elemento.Titulo }}</a>  </td>
-      </ng-container>
+  <button mat-raised-button color="primary" type="submit" [disabled]="formulario.invalid">
+    Enviar
+  </button>
+</form>
 
-      <!-- Contratante -->
-      <ng-container matColumnDef="contratante">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Contratante </th>
-        <td mat-cell *matCellDef="let elemento"> {{ elemento.Contratante }} </td>
-      </ng-container>
+<mat-card class="mat-elevation-z4">
+  <table mat-table [dataSource]="dataSource" matSort class="mat-table">
 
-      <!-- Fecha -->
-      <ng-container matColumnDef="fecha">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
-        <td mat-cell *matCellDef="let elemento"> {{ elemento.FechaAdjudicacion | date:'mediumDate' }} </td>
-      </ng-container>
+    <!-- Título -->
+    <ng-container matColumnDef="titulo">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Título </th>
+      <td mat-cell *matCellDef="let elemento"><a href="{{ elemento.URL }}">{{ elemento.Titulo }}</a>  </td>
+    </ng-container>
 
-      <!-- Ganador -->
-      <ng-container matColumnDef="ganador">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Ganador </th>
-        <td mat-cell *matCellDef="let elemento"> {{ elemento.Ganador }} </td>
-      </ng-container>
+    <!-- Contratante -->
+    <ng-container matColumnDef="contratante">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Contratante </th>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.Contratante }} </td>
+    </ng-container>
 
-      <!-- Importe -->
-      <ng-container matColumnDef="importe">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Importe </th>
-        <td mat-cell *matCellDef="let elemento"> {{ elemento.ImporteGanador | currency:'EUR' }} </td>
-      </ng-container>
+    <!-- Fecha -->
+    <ng-container matColumnDef="fecha">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.FechaAdjudicacion | date:'mediumDate' }} </td>
+    </ng-container>
 
-      <!-- Ganador -->
-      <ng-container matColumnDef="similitud">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Similitud </th>
-        <td mat-cell *matCellDef="let elemento"> {{ elemento.Similitud }} </td>
-      </ng-container>
+    <!-- Ganador -->
+    <ng-container matColumnDef="ganador">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Ganador </th>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.Ganador }} </td>
+    </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-      <tr mat-row *matRowDef="let fila; columns: columnas;"></tr>
-    </table>
+    <!-- Importe -->
+    <ng-container matColumnDef="importe">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Importe </th>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.ImporteGanador | currency:'EUR' }} </td>
+    </ng-container>
 
-    <mat-paginator [pageSize]="6" [pageSizeOptions]="[4, 6, 8]"></mat-paginator>
-  </mat-card>
-</div>
+    <!-- Ganador -->
+    <ng-container matColumnDef="similitud">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Similitud </th>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.Similitud }} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas;"></tr>
+  </table>
+
+  <mat-paginator [pageSize]="6" [pageSizeOptions]="[4, 6, 8]"></mat-paginator>
+</mat-card>
