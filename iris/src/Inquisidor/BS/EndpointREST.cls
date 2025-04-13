@@ -78,8 +78,8 @@ ClassMethod GetTenders() As %Status
             if ((stringEmpresa '= "") && (filtros.titulo '= "")) {
                 set description = ..GetEncoding(filtros.titulo)
                 set sql = 
-                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion) "_            
-                    "WHERE Similitud > 0.5 AND GanadorNIF %INLIST ? "_
+                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion WHERE GanadorNIF %INLIST ? ) "_            
+                    "WHERE Similitud > 0.5 "_
                     "ORDER BY Similitud DESC"
 
                     set statement = ##class(%SQL.Statement).%New()
