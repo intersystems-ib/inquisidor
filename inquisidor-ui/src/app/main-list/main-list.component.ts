@@ -44,17 +44,22 @@ export class MainListComponent implements OnInit{
   formulario: FormGroup;
   empresaSearch = new FormControl('');
   empresas = new FormControl<{ Name: string; NIF: string }[]>([]);
+  contratanteSearch = new FormControl('');
+  contratantes = new FormControl<string[]>([]);
   titulo = new FormControl<string>("");
   
   resultados: { Name: string; NIF: string }[] = [];
   resultado: any = null;
+
+  resultadosContratante: string[] = [];
 
   columnas: string[] = ['titulo', 'contratante', 'fecha', 'ganador', 'importe', 'similitud'];
   loading = false;
   datos: Array<any> = [];
   dataSource = new MatTableDataSource(this.datos);
 
-   private searchSub: Subscription;
+  private searchSub: Subscription;
+  private searchContratanteSub: Subscription;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -65,6 +70,8 @@ export class MainListComponent implements OnInit{
     this.formulario = this.fb.group({
       empresaSearch: this.empresaSearch,
       empresas: this.empresas,
+      contratanteSearch: this.contratanteSearch,
+      contratantes: this.contratantes,
       titulo: this.titulo
     });
 
@@ -81,6 +88,21 @@ export class MainListComponent implements OnInit{
       )
       .subscribe(res => {
         this.resultados = res;
+      });
+
+      this.searchContratanteSub = this.contratanteSearch.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(term => {
+          if (!term || term.length < 3) return of([]);
+          return from(this.irisService.getContractors(term)).pipe(
+            catchError(() => of([]))
+          );
+        })
+      )
+      .subscribe(res => {
+        this.resultadosContratante = res;
       });
   }
 
@@ -121,11 +143,26 @@ export class MainListComponent implements OnInit{
     this.empresas.setValue(actuales.filter(e => e.NIF !== nif));
   }
 
+  addContratante(event: MatAutocompleteSelectedEvent) {
+    const nombre = event.option.value;
+
+    if (!this.contratantes.value?.includes(nombre)) {
+      this.contratantes.setValue([...this.contratantes.value ?? [], nombre]);
+    }
+
+    this.contratanteSearch.setValue('');
+  }
+
+  removeContratante(nombre: string) {
+    this.contratantes.setValue((this.contratantes.value ?? []).filter(e => e !== nombre));
+  }
+
   onSubmit() {
     if (this.formulario.valid) {
       this.resultado = {
         empresas: this.empresas.value,
-        titulo: this.titulo.value
+        titulo: this.titulo.value,
+        contratantes: this.contratantes.value
       };
       this.filterList({"filtros": this.resultado});
     }

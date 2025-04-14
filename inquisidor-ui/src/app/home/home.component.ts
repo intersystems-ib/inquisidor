@@ -8,11 +8,13 @@ import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MainChartsComponent } from "../main-charts/main-charts.component";
+import { ContratanteChartsComponent } from '../contratante-charts/contratante-charts.component';
 
 @Component({
   selector: 'app-home',
   imports: [MainListComponent,
     MainChartsComponent,
+    ContratanteChartsComponent,
     CommonModule,
     MatSidenavModule,
     MatToolbarModule,
@@ -32,10 +34,5 @@ export class HomeComponent {
 
   toggleSidenav(sidenav: any) {
     sidenav.toggle();
-  }
-
-  redirect(component: String) {
-    
-    //this.router.navigate([component]);
   }
 }

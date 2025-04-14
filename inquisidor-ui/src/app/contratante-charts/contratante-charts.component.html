@@ -1,0 +1,103 @@
+<form [formGroup]="formulario" (ngSubmit)="onSubmit()" class="formulario">
+
+    <!-- Fila horizontal de dos campos -->
+    <div class="form-row-horizontal">
+      <mat-form-field class="field-50" appearance="outline">
+        <mat-label>Buscar contratantes</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="contratanteSearch"
+          [matAutocomplete]="auto"
+          placeholder="Escribe al menos 3 letras..."
+        />
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addContratante($event)">
+          <mat-option *ngFor="let contratante of resultados" [value]="contratante">
+            {{ contratante }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+  
+      <mat-form-field class="field-50" appearance="fill">
+        <mat-label>Años</mat-label>
+        <mat-select [formControl]="anios" multiple>
+          <mat-option *ngFor="let year of listaAnios" [value]="year">{{ year }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  
+    <!-- Chips seleccionadas -->
+    <label class="mat-label">Contratante seleccionadas</label>
+    <mat-chip-listbox class="full-width" multiple>
+      <mat-chip-option
+        *ngFor="let contratante of contratantes.value"
+        [selected]="true"
+        (removed)="removeContratante(contratante)">
+        {{ contratante }}
+        <button matChipRemove>
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-option>
+    </mat-chip-listbox>
+    <div class="error" *ngIf="contratantes.invalid && contratantes.touched">
+      Debes seleccionar al menos un contratante.
+    </div>
+  
+    <!-- Error para años -->
+    <div class="error" *ngIf="anios.invalid && anios.touched">
+      Selecciona al menos un año.
+    </div>
+  
+    <button mat-raised-button color="primary" type="submit" [disabled]="formulario.invalid">
+      Enviar
+    </button>
+  
+  </form>
+  
+  <div class="dashboard-grid" *ngIf="lineChartData.length>0 && pieChartData.length>0 && barChartData.length>0">
+      <!-- Gráfico de líneas: Importes anuales por empresa -->
+      <div class="section">
+        <h3>Importe anual por contratante</h3>
+        <ngx-charts-line-chart
+          [results]="lineChartData"
+          [view]="[400, 300]"
+          [legendPosition]= "legendPosition"
+          [xAxis]="true"
+          [yAxis]="true"
+          [legend]="true"
+          [autoScale]="true"
+          [showXAxisLabel]="true"
+          [showYAxisLabel]="true"
+          [xAxisLabel]="'Año'"
+          [yAxisLabel]="'Importe (€)'">
+        </ngx-charts-line-chart>
+      </div>
+  
+      <!-- Gráfico de tarta: Importe 2025 por empresa -->
+      <div class="section">
+        <h3>Importe total por contratante</h3>
+        <ngx-charts-pie-chart
+          [results]="pieChartData"
+          [view]="[400, 300]"
+          [legendPosition]= "legendPosition"
+          [legend]="true"
+          [labels]="true"
+          [explodeSlices]="false"
+          [doughnut]="true">
+        </ngx-charts-pie-chart>
+      </div>
+  
+      <!-- Gráfico de barras: Importes acumulados 2020–2025 -->
+      <div class="section">
+        <h3>Importe total por contratante</h3>
+        <ngx-charts-bar-vertical
+          [results]="barChartData"
+          [view]="[400, 300]"
+          [legendPosition]= "legendPosition"
+          [xAxis]="true"
+          [yAxis]="true"
+          [legend]="false"
+          [showDataLabel]="true">
+        </ngx-charts-bar-vertical>
+      </div>
+    </div>

@@ -27,6 +27,12 @@ export class IrisService {
     )
   }
 
+  getContractors(filter: String): Observable<any> {
+    return this.http.get<Response>(
+      IRIS_API + 'getContractors?filter='+filter, httpOptions
+    )
+  }
+
   getYears(): Observable<any> {
     return this.http.get<Response>(
       IRIS_API + 'getYears', httpOptions
@@ -36,6 +42,12 @@ export class IrisService {
   getStatistics(filters: any): Observable<any> {
     return this.http.post<Response>(
       IRIS_API + 'getStatistics', filters, httpOptions
+    )
+  }
+
+  getStatisticsContractors(filters: any): Observable<any> {
+    return this.http.post<Response>(
+      IRIS_API + 'getStatisticsContractors', filters, httpOptions
     )
   }
 

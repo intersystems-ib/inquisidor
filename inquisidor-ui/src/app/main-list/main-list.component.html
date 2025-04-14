@@ -1,6 +1,6 @@
 <form [formGroup]="formulario" (ngSubmit)="onSubmit()" class="formulario">
   <div class="form-row-horizontal">
-    <mat-form-field class="field-50" appearance="outline">
+    <mat-form-field class="field-33" appearance="outline">
       <mat-label>Buscar empresas</mat-label>
       <input
         type="text"
@@ -16,13 +16,29 @@
       </mat-autocomplete>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="field-50">
-      <mat-label>Buscar</mat-label>
+    <mat-form-field appearance="outline" class="field-33">
+      <mat-label>Buscar por título</mat-label>
       <input matInput [formControl]="titulo" placeholder="Filtra por cualquier campo..." />
+    </mat-form-field>
+
+    <mat-form-field class="field-33" appearance="outline">
+      <mat-label>Buscar contratantes</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="contratanteSearch"
+        [matAutocomplete]="autoContratante"
+        placeholder="Escribe al menos 3 letras..."
+      />
+      <mat-autocomplete #autoContratante="matAutocomplete" (optionSelected)="addContratante($event)">
+        <mat-option *ngFor="let contratante of resultadosContratante" [value]="contratante">
+          {{ contratante }}
+        </mat-option>
+      </mat-autocomplete>
     </mat-form-field>
   </div>
   <!-- Chips seleccionadas -->
-  <label class="mat-label">Empresas seleccionadas</label>
+  <label class="mat-label">Empresas y contratantes seleccionados</label>
   <mat-chip-listbox class="full-width" multiple>
     <mat-chip-option
       *ngFor="let empresa of empresas.value"
@@ -33,7 +49,17 @@
         <mat-icon>cancel</mat-icon>
       </button>
     </mat-chip-option>
+    <mat-chip-option class="contratante"
+      *ngFor="let contratante of contratantes.value"
+      [selected]="true"
+      (removed)="removeContratante(contratante)">
+      {{ contratante }}
+      <button matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-option>
   </mat-chip-listbox>
+  
   <div class="error" *ngIf="titulo.invalid && titulo.touched">
     Debes introducir un título.
   </div>
