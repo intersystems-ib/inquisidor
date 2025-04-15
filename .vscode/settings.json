@@ -2,6 +2,6 @@
     "objectscript.conn": {
         "server": "webgateway",
         "ns": "INQUISIDOR",
-        "active": true
+        "active": false
     }
 }

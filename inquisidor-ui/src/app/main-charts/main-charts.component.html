@@ -101,3 +101,10 @@
       </ngx-charts-bar-vertical>
     </div>
   </div>
+
+  <div class="overlay-cargando" *ngIf="cargando">
+    <div class="spinner-wrapper">
+      <mat-spinner diameter="48"></mat-spinner>
+      <span>Cargando...</span>
+    </div>
+  </div>

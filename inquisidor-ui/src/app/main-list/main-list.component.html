@@ -114,3 +114,9 @@
 
   <mat-paginator [pageSize]="6" [pageSizeOptions]="[4, 6, 8]"></mat-paginator>
 </mat-card>
+<div class="overlay-cargando" *ngIf="cargando">
+  <div class="spinner-wrapper">
+    <mat-spinner diameter="48"></mat-spinner>
+    <span>Cargando...</span>
+  </div>
+</div>

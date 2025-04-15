@@ -15,6 +15,7 @@ import { IrisService } from '../services/iris.service';
 import { catchError, debounceTime, distinctUntilChanged, from, of, Subscription, switchMap } from 'rxjs';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipListbox, MatChipOption, MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-main-list',
@@ -34,7 +35,8 @@ import { MatChipListbox, MatChipOption, MatChipsModule } from '@angular/material
     MatToolbarModule,
     MatChipsModule,
     MatChipListbox,
-    MatChipOption
+    MatChipOption,
+    MatProgressSpinnerModule
   ],
   templateUrl: './main-list.component.html',
   styleUrl: './main-list.component.scss'
@@ -54,12 +56,13 @@ export class MainListComponent implements OnInit{
   resultadosContratante: string[] = [];
 
   columnas: string[] = ['titulo', 'contratante', 'fecha', 'ganador', 'importe', 'similitud'];
-  loading = false;
   datos: Array<any> = [];
   dataSource = new MatTableDataSource(this.datos);
 
   private searchSub: Subscription;
   private searchContratanteSub: Subscription;
+
+  cargando = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -107,20 +110,23 @@ export class MainListComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.loading = true;
+    this.cargando = false;
   }
 
   filterList(filter: any) {
+    this.cargando = true;
     this.irisService.getTenders(filter).subscribe({
       next: res => {  
         this.datos = res;
         this.dataSource = new MatTableDataSource(this.datos);
-        this.loading = false;
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
       },
       error: err => {
         console.error(JSON.stringify(err));
+      }, 
+      complete: () =>  {
+        this.cargando = false;
       }
     });
   }

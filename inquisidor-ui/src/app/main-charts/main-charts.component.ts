@@ -12,6 +12,7 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-main-charts',
@@ -25,7 +26,9 @@ import { MatButtonModule } from '@angular/material/button';
     MatChipListbox,
     MatChipOption,
     MatButtonModule,
-    MatSelectModule],
+    MatSelectModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './main-charts.component.html',
   styleUrl: './main-charts.component.scss'
 })
@@ -46,7 +49,7 @@ export class MainChartsComponent implements OnInit{
     domain: ['#1976d2', '#388e3c', '#fbc02d', '#e64a19']
   };
 
-  loading = false;
+  cargando = true;
   legendPosition: LegendPosition = LegendPosition.Below
 
   lineChartData = [];
@@ -85,7 +88,7 @@ export class MainChartsComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.loading = false;
+    this.cargando = false;
   }
 
   addEmpresa(event: MatAutocompleteSelectedEvent) {
@@ -121,6 +124,7 @@ export class MainChartsComponent implements OnInit{
   }
   
   getStatistics(filter: any) {
+    this.cargando = true;
       this.irisService.getStatistics(filter).subscribe({
         next: res => {  
           this.lineChartData = res.lineal;
@@ -129,6 +133,9 @@ export class MainChartsComponent implements OnInit{
         },
         error: err => {
           console.error(JSON.stringify(err));
+        }, 
+        complete: () =>  {
+          this.cargando = false;
         }
       });
     }

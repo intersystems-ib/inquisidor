@@ -34,3 +34,16 @@ services:
     - ./webgateway/shared:/webgateway-shared
     depends_on:
     - iris  
+
+    # angular
+  angular:
+    init: true
+    container_name: inquisidor-ui
+    build:
+      context: .
+      dockerfile: inquisidor-ui/Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - iris
