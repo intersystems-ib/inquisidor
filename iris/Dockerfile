@@ -30,6 +30,9 @@ RUN chmod +x /opt/irisapp/DemoSetup.Utilities.cls
 COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/iris.cpf /
 RUN chmod +x /iris.cpf
 
+COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/ApplicationInquisidor.xml /
+RUN chmod +x /ApplicationInquisidor.xml
+
 ENV ISC_CPF_MERGE_FILE=/iris.cpf
 
 SHELL ["/irissession.sh"]
@@ -41,6 +44,7 @@ do ##class(Security.Users).UnExpireUserPasswords("*") \
 set sc=##class(%SYSTEM.OBJ).Load("/opt/irisapp/DemoSetup.Utilities.cls","ck") \
 set helper=##class(DemoSetup.Utilities).%New() \ 
 do helper.EnableSSLSuperServer() \
+do ##class(Security.Applications).Import("/ApplicationInquisidor.xml",.n) \
 zn "INQUISIDOR" \
 set sc = $SYSTEM.OBJ.LoadDir("/opt/irisapp/src/Inquisidor", "ck", , 1) \
 set production = "Inquisidor.Production" \
