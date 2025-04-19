@@ -17,6 +17,7 @@ XData UrlMap [ XMLNamespace = "https://www.intersystems.com/urlmap" ]
     <Route Url="/getContractors" Method="GET" Call="GetContractors" />
     <Route Url="/getStatisticsContractors" Method="POST" Call="GetStatisticsContractors" />
     <Route Url="/getYears" Method="GET" Call="GetYears" />
+    <Route Url="/getCPV" Method="GET" Call="GetCPV" />
 </Routes>
 }
 
@@ -62,6 +63,7 @@ ClassMethod Test() As %Status
 
 ClassMethod GetTenders() As %Status
 {
+    set query = ""
     Try {
         If '##class(%REST.Impl).%CheckAccepts("application/json") Do ##class(%REST.Impl).%ReportRESTError(..#HTTP406NOTACCEPTABLE,$$$ERROR($$$RESTBadAccepts)) Quit
         
@@ -70,10 +72,14 @@ ClassMethod GetTenders() As %Status
         set dynamicBody = {}.%FromJSON(%request.Content)
 
         set filtros = dynamicBody.%Get("filtros")
+        set whereList = ""
         
          if ($ISOBJECT(filtros)) {
             set iterEmpresa = filtros.empresas.%GetIterator()
+            set iterCPV = filtros.cpvs.%GetIterator()
             set stringEmpresa = ""
+            set stringContratante = ""
+            set stringCPV = ""
             while iterEmpresa.%GetNext(.keyEmpresa, .valueEmpresa) {
                 set stringEmpresa = stringEmpresa_","_valueEmpresa.NIF
             }
@@ -82,91 +88,47 @@ ClassMethod GetTenders() As %Status
             while iterContratante.%GetNext(.keyEmpresa, .valueEmpresa) {
                 set stringContratante = stringContratante_","_valueEmpresa
             }
-            if ((stringEmpresa '= "") && (filtros.titulo '= "") && (stringContratante = "")) {
+            set stringCPV = ""
+            while iterCPV.%GetNext(.keyCPV, .valueCPV) {
+                set stringCPV = stringCPV_","_valueCPV.Code
+            }
+            
+            if (filtros.titulo '= "") {
                 set description = ..GetEncoding(filtros.titulo)
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(description)
+
                 set sql = 
-                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion WHERE GanadorNIF %INLIST ? ) "_            
+                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion "
+                set endSQL = ")"_          
                     "WHERE Similitud > 0.5 "_
                     "ORDER BY Similitud DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute(description, $LISTFROMSTRING(stringEmpresa))
-            }
-            elseif ((stringEmpresa '= "") && (filtros.titulo '= "") && (stringContratante '= "")) {
-                set description = ..GetEncoding(filtros.titulo)
-                set sql = 
-                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion "_
-                    "WHERE GanadorNIF %INLIST ? and Contratante %INLIST ? ) "_            
-                    "WHERE Similitud > 0.5 "_
-                    "ORDER BY Similitud DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute(description, $LISTFROMSTRING(stringEmpresa),$LISTFROMSTRING(stringContratante))
-            }
-            elseif ((stringEmpresa '= "") && (filtros.titulo = "") && (stringContratante = "")) {
-                set sql = 
-                    "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
-                    "WHERE GanadorNIF %INLIST ? "_
-                    "ORDER BY FechaAdjudicacion DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute($LISTFROMSTRING(stringEmpresa))
-            }
-            elseif ((stringEmpresa '= "") && (filtros.titulo = "") && (stringContratante '= "")) {
-                set sql = 
-                    "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
-                    "WHERE GanadorNIF %INLIST ? AND Contratante %INLIST ? "_
-                    "ORDER BY FechaAdjudicacion DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute($LISTFROMSTRING(stringEmpresa), $LISTFROMSTRING(stringContratante))
-            }
-            elseif ((stringEmpresa = "") && (filtros.titulo '= "") && (stringContratante = "")) {
-                set description = ..GetEncoding(filtros.titulo)
-                set sql = 
-                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion) "_            
-                    "WHERE Similitud > 0.5 "_
-                    "ORDER BY Similitud DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute(description)
-            }
-            elseif ((stringEmpresa = "") && (filtros.titulo '= "") && (stringContratante '= "")) {
-                set description = ..GetEncoding(filtros.titulo)
-                set sql = 
-                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion WHERE Contratante %INLIST ?) "_            
-                    "WHERE Similitud > 0.5 "_
-                    "ORDER BY Similitud DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute(description)
-            }
-            elseif ((stringEmpresa = "") && (filtros.titulo = "") && (stringContratante '= "")) {
-                set sql = 
-                    "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
-                    "WHERE Contratante %INLIST ? "_
-                    "ORDER BY FechaAdjudicacion DESC"
-
-                    set statement = ##class(%SQL.Statement).%New()
-                    $$$ThrowOnError(statement.%Prepare(sql))
-                    set rs = statement.%Execute($LISTFROMSTRING(stringContratante))
             }
             else {
-                set sql = 
-                "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
-                "ORDER BY %ID DESC"
-
-                set statement = ##class(%SQL.Statement).%New()
-                $$$ThrowOnError(statement.%Prepare(sql))
-                set rs = statement.%Execute()
+                set sql =
+                    "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "         
+                set endSQL = " ORDER BY FechaAdjudicacion DESC"
             }
-        
+            
+            if (stringEmpresa '= "") {
+                Set whereList = whereList_$ListBuild("GanadorNIF %INLIST ?")
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringEmpresa)
+            }
+
+            if (stringContratante '= "") {
+                Set whereList = whereList_$ListBuild("Contratante %INLIST ?")
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringContratante)
+            }
+
+            if (stringCPV '= "") {
+                Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV)
+            }
+
+            set query = sql_"WHERE "_$LISTTOSTRING(whereList," AND ")_" "_endSQL
+
+            set statement = ##class(%SQL.Statement).%New()
+                    $$$ThrowOnError(statement.%Prepare(query))
+            set rs = statement.%Execute(tArgs...)
         }
         set array = []
         while rs.%Next() {
@@ -415,6 +377,36 @@ ClassMethod GetStatisticsContractors() As %Status
         set %response.Status = ..#HTTP200OK
         set tempStream = ##class(%Stream.TmpCharacter).%New()
         do results.%ToJSON(tempStream)
+        write tempStream.Read()
+
+    } Catch (ex) {
+        Do ##class(%REST.Impl).%SetStatusCode("400")
+        Do ##class(%REST.Impl).%WriteResponse(ex.DisplayString())
+    }
+    Quit $$$OK
+}
+
+ClassMethod GetCPV() As %Status
+{
+    Try {
+        If '##class(%REST.Impl).%CheckAccepts("application/json") Do ##class(%REST.Impl).%ReportRESTError(..#HTTP406NOTACCEPTABLE,$$$ERROR($$$RESTBadAccepts)) Quit
+        
+        set filter = %request.Data("filter",1)
+        set sql = 
+            "SELECT code, description FROM Inquisidor_Object.CPV WHERE code like ?_'%'"
+
+        set statement = ##class(%SQL.Statement).%New()
+        $$$ThrowOnError(statement.%Prepare(sql))
+        set rs = statement.%Execute(filter)
+        
+        
+        set array = []
+        while rs.%Next() {
+            do array.%Push({"Code": (rs.%Get("code")), "Description": (rs.%Get("description"))})
+        }
+        set %response.Status = ..#HTTP200OK
+        set tempStream = ##class(%Stream.TmpCharacter).%New()
+        do array.%ToJSON(tempStream)
         write tempStream.Read()
 
     } Catch (ex) {

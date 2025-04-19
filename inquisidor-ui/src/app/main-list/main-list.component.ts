@@ -49,6 +49,8 @@ export class MainListComponent implements OnInit{
   empresas = new FormControl<{ Name: string; NIF: string }[]>([]);
   contratanteSearch = new FormControl('');
   contratantes = new FormControl<string[]>([]);
+  cpvSearch = new FormControl('');
+  cpvs = new FormControl<{ Code: string; Description: string }[]>([]);
   titulo = new FormControl<string>("");
   
   resultados: { Name: string; NIF: string }[] = [];
@@ -56,12 +58,15 @@ export class MainListComponent implements OnInit{
 
   resultadosContratante: string[] = [];
 
+  resultadosCPV: { Code: string; Description: string }[] = [];
+
   columnas: string[] = ['titulo', 'contratante', 'fecha', 'ganador', 'importe', 'similitud'];
   datos: Array<any> = [];
   dataSource = new MatTableDataSource(this.datos);
 
   private searchSub: Subscription;
   private searchContratanteSub: Subscription;
+  private searchCPVSub: Subscription;
 
   cargando = true;
 
@@ -77,6 +82,8 @@ export class MainListComponent implements OnInit{
       empresas: this.empresas,
       contratanteSearch: this.contratanteSearch,
       contratantes: this.contratantes,
+      cpvSearch: this.cpvSearch,
+      cpvs: this.cpvs,
       titulo: this.titulo
     });
 
@@ -108,6 +115,21 @@ export class MainListComponent implements OnInit{
       )
       .subscribe(res => {
         this.resultadosContratante = res;
+      });
+
+      this.searchCPVSub = this.cpvSearch.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(term => {
+          if (!term || term.length < 3) return of([]);
+          return from(this.irisService.getCPV(term)).pipe(
+            catchError(() => this.router.navigate(['login']))
+          );
+        })
+      )
+      .subscribe(res => {
+        this.resultadosCPV = res;
       });
   }
 
@@ -152,6 +174,24 @@ export class MainListComponent implements OnInit{
     this.empresas.setValue(actuales.filter(e => e.NIF !== nif));
   }
 
+  addCPV(event: MatAutocompleteSelectedEvent) {
+    const seleccionada = event.option.value as { Code: string; Description: string };
+
+    const yaSeleccionadas = this.cpvs.value ?? [];
+    const yaExiste = yaSeleccionadas.some(e => e.Code === seleccionada.Code);
+
+    if (!yaExiste) {
+      this.cpvs.setValue([...yaSeleccionadas, seleccionada]);
+    }
+
+    this.cpvSearch.setValue('');
+  }
+
+  removeCPV(code: string) {
+    const actuales = this.cpvs.value ?? [];
+    this.cpvs.setValue(actuales.filter(e => e.Code !== code));
+  }
+
   addContratante(event: MatAutocompleteSelectedEvent) {
     const nombre = event.option.value;
 
@@ -171,7 +211,8 @@ export class MainListComponent implements OnInit{
       this.resultado = {
         empresas: this.empresas.value,
         titulo: this.titulo.value,
-        contratantes: this.contratantes.value
+        contratantes: this.contratantes.value,
+        cpvs: this.cpvs.value
       };
       this.filterList({"filtros": this.resultado});
     }
@@ -179,5 +220,7 @@ export class MainListComponent implements OnInit{
 
   ngOnDestroy(): void {
     this.searchSub.unsubscribe();
+    this.searchContratanteSub.unsubscribe();
+    this.searchCPVSub.unsubscribe();
   }
 }

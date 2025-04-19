@@ -33,6 +33,12 @@ export class IrisService {
     )
   }
 
+  getCPV(filter: String): Observable<any> {
+    return this.http.get<Response>(
+      IRIS_API + 'getCPV?filter='+filter, httpOptions
+    )
+  }
+
   getYears(): Observable<any> {
     return this.http.get<Response>(
       IRIS_API + 'getYears', httpOptions

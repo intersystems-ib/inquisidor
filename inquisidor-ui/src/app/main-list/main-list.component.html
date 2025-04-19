@@ -1,6 +1,6 @@
 <form [formGroup]="formulario" (ngSubmit)="onSubmit()" class="formulario">
   <div class="form-row-horizontal">
-    <mat-form-field class="field-33" appearance="outline">
+    <mat-form-field class="field-25" appearance="outline">
       <mat-label>Buscar empresas</mat-label>
       <input
         type="text"
@@ -16,12 +16,12 @@
       </mat-autocomplete>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="field-33">
+    <mat-form-field appearance="outline" class="field-25">
       <mat-label>Buscar por título</mat-label>
       <input matInput [formControl]="titulo" placeholder="Filtra por cualquier campo..." />
     </mat-form-field>
 
-    <mat-form-field class="field-33" appearance="outline">
+    <mat-form-field class="field-25" appearance="outline">
       <mat-label>Buscar contratantes</mat-label>
       <input
         type="text"
@@ -36,9 +36,24 @@
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
+    <mat-form-field class="field-25" appearance="outline">
+      <mat-label>Buscar CPV</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="cpvSearch"
+        [matAutocomplete]="autoCPV"
+        placeholder="Escribe al menos 3 dígitos..."
+      />
+      <mat-autocomplete #autoCPV="matAutocomplete" (optionSelected)="addCPV($event)">
+        <mat-option *ngFor="let cpv of resultadosCPV" [value]="cpv">
+          {{ cpv.Code }} — {{ cpv.Description }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
   </div>
   <!-- Chips seleccionadas -->
-  <label class="mat-label">Empresas y contratantes seleccionados</label>
+  <label class="mat-label">Empresas, contratantes y CPVs seleccionados</label>
   <mat-chip-listbox class="full-width" multiple>
     <mat-chip-option
       *ngFor="let empresa of empresas.value"
@@ -54,6 +69,15 @@
       [selected]="true"
       (removed)="removeContratante(contratante)">
       {{ contratante }}
+      <button matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-option>
+    <mat-chip-option class="cpv"
+      *ngFor="let cpv of cpvs.value"
+      [selected]="true"
+      (removed)="removeCPV(cpv.Code)">
+      {{ cpv.Code }} ({{ cpv.Description }})
       <button matChipRemove>
         <mat-icon>cancel</mat-icon>
       </button>
