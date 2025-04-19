@@ -105,21 +105,21 @@ ClassMethod GetTenders() As %Status
                     $$$ThrowOnError(statement.%Prepare(sql))
                     set rs = statement.%Execute(description, $LISTFROMSTRING(stringEmpresa),$LISTFROMSTRING(stringContratante))
             }
-            elseif ((stringEmpresa '= "") && (filtros.titulo = "" && (stringContratante = ""))) {
+            elseif ((stringEmpresa '= "") && (filtros.titulo = "") && (stringContratante = "")) {
                 set sql = 
                     "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
                     "WHERE GanadorNIF %INLIST ? "_
-                    "ORDER BY Ganador ASC"
+                    "ORDER BY FechaAdjudicacion DESC"
 
                     set statement = ##class(%SQL.Statement).%New()
                     $$$ThrowOnError(statement.%Prepare(sql))
                     set rs = statement.%Execute($LISTFROMSTRING(stringEmpresa))
             }
-            elseif ((stringEmpresa '= "") && (filtros.titulo = "" && (stringContratante '= ""))) {
+            elseif ((stringEmpresa '= "") && (filtros.titulo = "") && (stringContratante '= "")) {
                 set sql = 
                     "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
                     "WHERE GanadorNIF %INLIST ? AND Contratante %INLIST ? "_
-                    "ORDER BY Ganador ASC"
+                    "ORDER BY FechaAdjudicacion DESC"
 
                     set statement = ##class(%SQL.Statement).%New()
                     $$$ThrowOnError(statement.%Prepare(sql))
@@ -146,6 +146,16 @@ ClassMethod GetTenders() As %Status
                     set statement = ##class(%SQL.Statement).%New()
                     $$$ThrowOnError(statement.%Prepare(sql))
                     set rs = statement.%Execute(description)
+            }
+            elseif ((stringEmpresa = "") && (filtros.titulo = "") && (stringContratante '= "")) {
+                set sql = 
+                    "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "_            
+                    "WHERE Contratante %INLIST ? "_
+                    "ORDER BY FechaAdjudicacion DESC"
+
+                    set statement = ##class(%SQL.Statement).%New()
+                    $$$ThrowOnError(statement.%Prepare(sql))
+                    set rs = statement.%Execute($LISTFROMSTRING(stringContratante))
             }
             else {
                 set sql = 

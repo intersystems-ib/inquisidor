@@ -16,6 +16,7 @@ import { catchError, debounceTime, distinctUntilChanged, from, of, Subscription,
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipListbox, MatChipOption, MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-main-list',
@@ -68,7 +69,8 @@ export class MainListComponent implements OnInit{
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private irisService: IrisService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     this.formulario = this.fb.group({
       empresaSearch: this.empresaSearch,
@@ -100,7 +102,7 @@ export class MainListComponent implements OnInit{
         switchMap(term => {
           if (!term || term.length < 3) return of([]);
           return from(this.irisService.getContractors(term)).pipe(
-            catchError(() => of([]))
+            catchError(() => this.router.navigate(['login']))
           );
         })
       )
@@ -124,6 +126,7 @@ export class MainListComponent implements OnInit{
       },
       error: err => {
         console.error(JSON.stringify(err));
+        this.router.navigate(['login']);
       }, 
       complete: () =>  {
         this.cargando = false;

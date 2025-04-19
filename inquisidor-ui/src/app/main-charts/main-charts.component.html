@@ -60,7 +60,7 @@
       <h3>Importe anual por empresa</h3>
       <ngx-charts-line-chart
         [results]="lineChartData"
-        [view]="[400, 300]"
+        [view]="[600, 300]"
         [legendPosition]= "legendPosition"
         [xAxis]="true"
         [yAxis]="true"
@@ -74,25 +74,25 @@
     </div>
 
     <!-- Gráfico de tarta: Importe 2025 por empresa -->
-    <div class="section">
+    <!--<div class="section">
       <h3>Importe total por empresa</h3>
       <ngx-charts-pie-chart
         [results]="pieChartData"
-        [view]="[400, 300]"
+        [view]="[600, 300]"
         [legendPosition]= "legendPosition"
         [legend]="true"
         [labels]="true"
         [explodeSlices]="false"
         [doughnut]="true">
       </ngx-charts-pie-chart>
-    </div>
+    </div>-->
 
     <!-- Gráfico de barras: Importes acumulados 2020–2025 -->
     <div class="section">
       <h3>Importe total por empresa</h3>
       <ngx-charts-bar-vertical
         [results]="barChartData"
-        [view]="[400, 300]"
+        [view]="[600, 300]"
         [legendPosition]= "legendPosition"
         [xAxis]="true"
         [yAxis]="true"

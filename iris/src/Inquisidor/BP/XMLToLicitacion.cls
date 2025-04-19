@@ -82,17 +82,15 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                                         if detailTender.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}LegalMonetaryTotal":
                                             for detailWinnerAmount in detailTender:
                                                 if detailWinnerAmount.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}TaxExclusiveAmount":
-                                                    licitacion["importeganadorsinimpuestos"] = detailWinnerAmount.text
+                                                   licitacion["importeganadorsinimpuestos"] = detailWinnerAmount.text
                                                 elif detailWinnerAmount.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}PayableAmount":
                                                     licitacion["importeganador"] = detailWinnerAmount.text
-            iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", "Terminado mapeo "+licitacion["titulo"])
-            if licitacion.get("importeganador") is not None and licitacion.get("importeganador") is not "":
-                iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", "Lanzando insert "+licitacion["titulo"])
+            if licitacion.get("importeganador") is not None and licitacion.get("importeganador") != "":
                 stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?,?)")
                 try:
                     rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"], licitacion["ganadornif"])
                 except Exception as err:
-                    iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", repr(err))
+                    iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
         return "Success"
     except Exception as err:
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", repr(err))
@@ -114,16 +112,17 @@ Method GenerateEmbeddings() As %String [ Language = python ]
         st = iris.sql.prepare("SELECT TOP 50 IdLicitacion, Titulo FROM INQUISIDOR_Object.Licitacion WHERE TituloVectorizado is null ORDER BY ID ASC ")
         resultSet = st.execute()
         df = resultSet.dataframe()
-        
+        iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Iniciando vectorización")
         if (df.size > 0):
             model = sentence_transformers.SentenceTransformer("/iris-shared/model/")
             embeddings = model.encode(df['titulo'].tolist(), normalize_embeddings=True)
 
             df['titulovectorizado'] = embeddings.tolist()
-
+            iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Iniciando inserción")
             stmt = iris.sql.prepare("UPDATE INQUISIDOR_Object.Licitacion SET TituloVectorizado = TO_VECTOR(?,DECIMAL) WHERE IdLicitacion = ?")
             for index, row in df.iterrows():
                 rs = stmt.execute(str(row['titulovectorizado']), row['idlicitacion'])
+            iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Inserción concluida")
         else:
             flagLoop = False
 }

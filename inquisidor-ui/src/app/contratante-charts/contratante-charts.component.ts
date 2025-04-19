@@ -12,6 +12,7 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-contratante-charts',
@@ -56,7 +57,8 @@ export class ContratanteChartsComponent implements OnInit{
   barChartData = [];
 
   constructor(private irisService: IrisService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
 
     const currentYear = new Date().getFullYear();
@@ -75,7 +77,7 @@ export class ContratanteChartsComponent implements OnInit{
         switchMap(term => {
           if (!term || term.length < 3) return of([]);
           return from(this.irisService.getContractors(term)).pipe(
-            catchError(() => of([]))
+            catchError(() => this.router.navigate(['login']))
           );
         })
       )
@@ -125,6 +127,7 @@ export class ContratanteChartsComponent implements OnInit{
         },
         error: err => {
           console.error(JSON.stringify(err));
+          this.router.navigate(['login']);
         }
       });
     }

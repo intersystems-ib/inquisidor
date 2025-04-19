@@ -1,4 +1,4 @@
-ARG IMAGE=containers.intersystems.com/intersystems/iris-community:latest-preview
+ARG IMAGE=containers.intersystems.com/intersystems/iris:latest-cd
 FROM $IMAGE
 
 USER root
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y python3
 COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /requirements.txt /
 RUN chmod 777 /requirements.txt
 
-RUN pip3 install -r /requirements.txt --break-system-packages
+RUN pip3 install -r /requirements.txt --break-system-packages --no-cache-dir
 
 USER irisowner
 
@@ -33,12 +33,19 @@ RUN chmod +x /iris.cpf
 COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/ApplicationInquisidor.xml /
 RUN chmod +x /ApplicationInquisidor.xml
 
+COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/sql/init.sql /
+RUN chmod +x /init.sql
+
 ENV ISC_CPF_MERGE_FILE=/iris.cpf
 
 SHELL ["/irissession.sh"]
 
+COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/iris.key /usr/irissys/mgr
+RUN chmod +x /usr/irissys/mgr/iris.key
+
 RUN \
 zn "%SYS" \
+do ##class(%SYSTEM.License).Upgrade() \
 do ##class(SYS.Container).QuiesceForBundling() \
 do ##class(Security.Users).UnExpireUserPasswords("*") \
 set sc=##class(%SYSTEM.OBJ).Load("/opt/irisapp/DemoSetup.Utilities.cls","ck") \
@@ -50,3 +57,4 @@ set sc = $SYSTEM.OBJ.LoadDir("/opt/irisapp/src/Inquisidor", "ck", , 1) \
 set production = "Inquisidor.Production" \
 set ^Ens.Configuration("csp","LastProduction") = production \
 do ##class(Ens.Director).SetAutoStart(production) \
+DO $SYSTEM.SQL.Schema.ImportDDL("/init.sql",,"IRIS") \
