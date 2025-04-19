@@ -6,3 +6,4 @@ CREATE FOREIGN TABLE Inquisidor_Object.CPV (
    code VARCHAR(15), 
    description VARCHAR(500)
 ) SERVER Inquisidor.CPVDir FILE 'codes.csv'
+GO

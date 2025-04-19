@@ -54,7 +54,7 @@ do helper.EnableSSLSuperServer() \
 do ##class(Security.Applications).Import("/ApplicationInquisidor.xml",.n) \
 zn "INQUISIDOR" \
 set sc = $SYSTEM.OBJ.LoadDir("/opt/irisapp/src/Inquisidor", "ck", , 1) \
+do $SYSTEM.SQL.Schema.ImportDDL("/init.sql","/iris-shared/logfile.log","IRIS") \
 set production = "Inquisidor.Production" \
 set ^Ens.Configuration("csp","LastProduction") = production \
 do ##class(Ens.Director).SetAutoStart(production) \
-DO $SYSTEM.SQL.Schema.ImportDDL("/init.sql",,"IRIS") \
