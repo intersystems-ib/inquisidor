@@ -95,7 +95,7 @@ ClassMethod GetTenders() As %Status
             
             if (filtros.titulo '= "") {
                 set description = ..GetEncoding(filtros.titulo)
-                Set tArgs($i(tArgs)) = $LISTFROMSTRING(description)
+                Set tArgs($i(tArgs)) = description
 
                 set sql = 
                     "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion "
@@ -109,22 +109,31 @@ ClassMethod GetTenders() As %Status
                 set endSQL = " ORDER BY FechaAdjudicacion DESC"
             }
             
+            set generalCondition = 0
+
             if (stringEmpresa '= "") {
                 Set whereList = whereList_$ListBuild("GanadorNIF %INLIST ?")
                 Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringEmpresa)
+                Set generalCondition = 1
             }
 
             if (stringContratante '= "") {
                 Set whereList = whereList_$ListBuild("Contratante %INLIST ?")
                 Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringContratante)
+                Set generalCondition = 1
             }
 
             if (stringCPV '= "") {
                 Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
                 Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV)
+                Set generalCondition = 1
             }
-
-            set query = sql_"WHERE "_$LISTTOSTRING(whereList," AND ")_" "_endSQL
+            if (generalCondition = 0) {
+                set query = sql_" "_$LISTTOSTRING(whereList," AND ")_" "_endSQL
+            }
+            else {
+                set query = sql_"WHERE "_$LISTTOSTRING(whereList," AND ")_" "_endSQL
+            }            
 
             set statement = ##class(%SQL.Statement).%New()
                     $$$ThrowOnError(statement.%Prepare(query))

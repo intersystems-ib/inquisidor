@@ -51,7 +51,7 @@ export class MainChartsComponent implements OnInit{
   };
 
   cargando = true;
-  legendPosition: LegendPosition = LegendPosition.Below
+  legendPosition: LegendPosition = LegendPosition.Right
 
   lineChartData = [];
 

@@ -56,11 +56,9 @@
 
 <div class="dashboard-grid" *ngIf="lineChartData.length>0 && pieChartData.length>0 && barChartData.length>0">
     <!-- Gráfico de líneas: Importes anuales por empresa -->
-    <div class="section">
-      <h3>Importe anual por empresa</h3>
+    <div class="section">      
       <ngx-charts-line-chart
         [results]="lineChartData"
-        [view]="[600, 300]"
         [legendPosition]= "legendPosition"
         [xAxis]="true"
         [yAxis]="true"
@@ -89,10 +87,8 @@
 
     <!-- Gráfico de barras: Importes acumulados 2020–2025 -->
     <div class="section">
-      <h3>Importe total por empresa</h3>
       <ngx-charts-bar-vertical
         [results]="barChartData"
-        [view]="[600, 300]"
         [legendPosition]= "legendPosition"
         [xAxis]="true"
         [yAxis]="true"

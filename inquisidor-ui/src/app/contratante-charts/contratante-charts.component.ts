@@ -13,6 +13,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-contratante-charts',
@@ -26,7 +27,8 @@ import { Router } from '@angular/router';
     MatChipListbox,
     MatChipOption,
     MatButtonModule,
-    MatSelectModule],
+    MatSelectModule,
+    MatProgressSpinnerModule],
   templateUrl: './contratante-charts.component.html',
   styleUrl: './contratante-charts.component.scss'
 })
@@ -47,8 +49,9 @@ export class ContratanteChartsComponent implements OnInit{
     domain: ['#1976d2', '#388e3c', '#fbc02d', '#e64a19']
   };
 
-  loading = false;
-  legendPosition: LegendPosition = LegendPosition.Below
+  cargando = true;
+
+  legendPosition: LegendPosition = LegendPosition.Right
 
   lineChartData = [];
 
@@ -87,7 +90,7 @@ export class ContratanteChartsComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.loading = false;
+    this.cargando = false;
   }
 
   addContratante(event: MatAutocompleteSelectedEvent) {
@@ -119,16 +122,20 @@ export class ContratanteChartsComponent implements OnInit{
   }
   
   getStatisticsContractors(filter: any) {
-      this.irisService.getStatisticsContractors(filter).subscribe({
-        next: res => {  
-          this.lineChartData = res.lineal;
-          this.pieChartData = res.pie;
-          this.barChartData = res.pie;
-        },
-        error: err => {
-          console.error(JSON.stringify(err));
-          this.router.navigate(['login']);
-        }
-      });
-    }
+    this.cargando = true;
+    this.irisService.getStatisticsContractors(filter).subscribe({
+      next: res => {  
+        this.lineChartData = res.lineal;
+        this.pieChartData = res.pie;
+        this.barChartData = res.pie;
+      },
+      error: err => {
+        console.error(JSON.stringify(err));
+        this.router.navigate(['login']);
+      }, 
+      complete: () =>  {
+        this.cargando = false;
+      }
+    });
+  }
 }
