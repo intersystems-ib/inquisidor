@@ -137,6 +137,10 @@ export class MainListComponent implements OnInit{
     this.cargando = false;
   }
 
+  ngAfterViewInit() {
+    this.dataSource.sort = this.sort;
+  }
+
   filterList(filter: any) {
     this.cargando = true;
     this.irisService.getTenders(filter).subscribe({

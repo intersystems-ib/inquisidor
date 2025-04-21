@@ -143,12 +143,12 @@ ClassMethod GetTenders() As %Status
         while rs.%Next() {
             do array.%Push({
                     "Id": (rs.%Get("ID")),
-                    "Contratante": (rs.%Get("Contratante")),
-                    "FechaAdjudicacion": (rs.%Get("FechaAdjudicacion")),
-                    "Ganador": (rs.%Get("Ganador")),
-                    "ImporteGanador": (rs.%Get("ImporteGanador")),
-                    "Titulo": (rs.%Get("Titulo")),
-                    "Similitud": (rs.%Get("Similitud")),
+                    "contratante": (rs.%Get("Contratante")),
+                    "fecha": (rs.%Get("FechaAdjudicacion")),
+                    "ganador": (rs.%Get("Ganador")),
+                    "importe": (rs.%Get("ImporteGanador")),
+                    "titulo": (rs.%Get("Titulo")),
+                    "similitud": (rs.%Get("Similitud")),
                     "URL": (rs.%Get("URL"))
                 })
         }
@@ -202,7 +202,7 @@ ClassMethod GetStatistics() As %Status
                     while rs.%Next() {
                         set total = rs.%Get("ImporteTotal")
                     }
-                    do statisticsEmpresa.series.%Push({"name":(valueAnyo),"value":(total)})
+                    do statisticsEmpresa.series.%Push({"name":("'"_valueAnyo_"'"),"value":(total)})
                     set stringAnyos = stringAnyos_","_valueAnyo
                 }
                 do linealResults.%Push(statisticsEmpresa)
@@ -362,7 +362,7 @@ ClassMethod GetStatisticsContractors() As %Status
                     while rs.%Next() {
                         set total = rs.%Get("ImporteTotal")
                     }
-                    do statisticsContratante.series.%Push({"name":(valueAnyo),"value":(total)})
+                    do statisticsContratante.series.%Push({"name":("'"_valueAnyo_"'"),"value":(total)})
                     set stringAnyos = stringAnyos_","_valueAnyo
                 }
                 

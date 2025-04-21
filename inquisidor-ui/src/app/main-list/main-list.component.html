@@ -99,44 +99,44 @@
     <!-- Título -->
     <ng-container matColumnDef="titulo">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Título </th>
-      <td mat-cell *matCellDef="let elemento"><a href="{{ elemento.URL }}">{{ elemento.Titulo }}</a>  </td>
+      <td mat-cell *matCellDef="let elemento"><a href="{{ elemento.URL }}">{{ elemento.titulo }}</a>  </td>
     </ng-container>
 
     <!-- Contratante -->
     <ng-container matColumnDef="contratante">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Contratante </th>
-      <td mat-cell *matCellDef="let elemento"> {{ elemento.Contratante }} </td>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.contratante }} </td>
     </ng-container>
 
     <!-- Fecha -->
     <ng-container matColumnDef="fecha">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
-      <td mat-cell *matCellDef="let elemento"> {{ elemento.FechaAdjudicacion | date:'mediumDate' }} </td>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.fecha | date:'mediumDate' }} </td>
     </ng-container>
 
     <!-- Ganador -->
     <ng-container matColumnDef="ganador">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Ganador </th>
-      <td mat-cell *matCellDef="let elemento"> {{ elemento.Ganador }} </td>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.ganador }} </td>
     </ng-container>
 
     <!-- Importe -->
     <ng-container matColumnDef="importe">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Importe </th>
-      <td mat-cell *matCellDef="let elemento"> {{ elemento.ImporteGanador | currency:'EUR' }} </td>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.importe | currency:'EUR' }} </td>
     </ng-container>
 
     <!-- Ganador -->
     <ng-container matColumnDef="similitud">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Similitud </th>
-      <td mat-cell *matCellDef="let elemento"> {{ elemento.Similitud }} </td>
+      <td mat-cell *matCellDef="let elemento"> {{ elemento.similitud }} </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="columnas"></tr>
     <tr mat-row *matRowDef="let fila; columns: columnas;"></tr>
   </table>
 
-  <mat-paginator [pageSize]="6" [pageSizeOptions]="[4, 6, 8]"></mat-paginator>
+  <mat-paginator [pageSize]="6" [pageSizeOptions]="[6, 8, 10]"></mat-paginator>
 </mat-card>
 <div class="overlay-cargando" *ngIf="cargando">
   <div class="spinner-wrapper">

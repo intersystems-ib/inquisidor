@@ -15,8 +15,8 @@
     <InbndWebServicesEnabled>true</InbndWebServicesEnabled>
     <IsNameSpaceDefault>false</IsNameSpaceDefault>
     <JWTAuthEnabled>true</JWTAuthEnabled>
-    <JWTAccessTokenTimeout>600</JWTAccessTokenTimeout>
-    <JWTRefreshTokenTimeout>900</JWTRefreshTokenTimeout>
+    <JWTAccessTokenTimeout>6000</JWTAccessTokenTimeout>
+    <JWTRefreshTokenTimeout>9000</JWTRefreshTokenTimeout>
     <LockCSPName>true</LockCSPName>
     <MatchRoles>
       <MatchRolesItem>:%All</MatchRolesItem>
