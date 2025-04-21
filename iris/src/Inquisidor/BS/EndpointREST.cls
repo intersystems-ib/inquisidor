@@ -81,16 +81,16 @@ ClassMethod GetTenders() As %Status
             set stringContratante = ""
             set stringCPV = ""
             while iterEmpresa.%GetNext(.keyEmpresa, .valueEmpresa) {
-                set stringEmpresa = stringEmpresa_","_valueEmpresa.NIF
+                set stringEmpresa = stringEmpresa_"|"_valueEmpresa.NIF
             }
             set iterContratante = filtros.contratantes.%GetIterator()
             set stringContratante = ""
-            while iterContratante.%GetNext(.keyEmpresa, .valueEmpresa) {
-                set stringContratante = stringContratante_","_valueEmpresa
+            while iterContratante.%GetNext(.keyContratante, .valueContratante) {
+                set stringContratante = stringContratante_"|"_valueContratante
             }
             set stringCPV = ""
             while iterCPV.%GetNext(.keyCPV, .valueCPV) {
-                set stringCPV = stringCPV_","_valueCPV.Code
+                set stringCPV = stringCPV_"|"_valueCPV.Code
             }
             
             if (filtros.titulo '= "") {
@@ -113,19 +113,19 @@ ClassMethod GetTenders() As %Status
 
             if (stringEmpresa '= "") {
                 Set whereList = whereList_$ListBuild("GanadorNIF %INLIST ?")
-                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringEmpresa)
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringEmpresa,"|")
                 Set generalCondition = 1
             }
 
             if (stringContratante '= "") {
                 Set whereList = whereList_$ListBuild("Contratante %INLIST ?")
-                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringContratante)
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringContratante, "|")
                 Set generalCondition = 1
             }
 
             if (stringCPV '= "") {
                 Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
-                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV)
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV, "|")
                 Set generalCondition = 1
             }
             if (generalCondition = 0) {
@@ -203,7 +203,7 @@ ClassMethod GetStatistics() As %Status
                         set total = rs.%Get("ImporteTotal")
                     }
                     do statisticsEmpresa.series.%Push({"name":("'"_valueAnyo_"'"),"value":(total)})
-                    set stringAnyos = stringAnyos_","_valueAnyo
+                    set stringAnyos = stringAnyos_"|"_valueAnyo
                 }
                 do linealResults.%Push(statisticsEmpresa)
                 set sql = 
@@ -211,7 +211,7 @@ ClassMethod GetStatistics() As %Status
                     "FROM Inquisidor_Object.Licitacion WHERE GanadorNIF = ? AND YEAR(FechaAdjudicacion) %INLIST ? "
                 set statement = ##class(%SQL.Statement).%New()
                 $$$ThrowOnError(statement.%Prepare(sql))
-                set rs = statement.%Execute(valueEmpresa.NIF, $LISTFROMSTRING(stringAnyos))
+                set rs = statement.%Execute(valueEmpresa.NIF, $LISTFROMSTRING(stringAnyos, "|"))
                 set totalPie = 0
                 while rs.%Next() {
                     set totalPie = rs.%Get("ImporteTotal")
@@ -363,7 +363,7 @@ ClassMethod GetStatisticsContractors() As %Status
                         set total = rs.%Get("ImporteTotal")
                     }
                     do statisticsContratante.series.%Push({"name":("'"_valueAnyo_"'"),"value":(total)})
-                    set stringAnyos = stringAnyos_","_valueAnyo
+                    set stringAnyos = stringAnyos_"|"_valueAnyo
                 }
                 
                 do linealResults.%Push(statisticsContratante)
@@ -372,7 +372,7 @@ ClassMethod GetStatisticsContractors() As %Status
                     "FROM Inquisidor_Object.Licitacion WHERE Contratante = ? AND YEAR(FechaAdjudicacion) %INLIST ? "
                 set statement = ##class(%SQL.Statement).%New()
                 $$$ThrowOnError(statement.%Prepare(sql))
-                set rs = statement.%Execute(valueContratante, $LISTFROMSTRING(stringAnyos))
+                set rs = statement.%Execute(valueContratante, $LISTFROMSTRING(stringAnyos,"|"))
                 set totalPie = 0
                 while rs.%Next() {
                     set totalPie = rs.%Get("ImporteTotal")
