@@ -8,6 +8,16 @@ Method OnRequest(pRequest As Ens.StreamContainer, Output pResponse As Ens.Respon
     set resultXML = ..ReadXML(filename)
     set resultEmbeddings = ""
     set resultEmbeddings = ..GenerateEmbeddings()
+    set sqlTruncate = "TRUNCATE TABLE Inquisidor_Object.LicitacionTemp"
+    set statementTruncate = ##class(%SQL.Statement).%New()
+    set statusTruncate = statementTruncate.%Prepare(sqlTruncate)
+    if ($$$ISOK(statusTruncate)) {
+        set resultSetTruncate = statementTruncate.%Execute()
+        set sc = statusTruncate
+    }
+    else {
+        set sc = statusTruncate
+    }
     
     Quit $$$OK
 }
@@ -127,10 +137,8 @@ Method GenerateEmbeddings() As %String [ Language = python ]
             flagLoop = False
     stmtInsert = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) "+
     "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF FROM INQUISIDOR_Object.LicitacionTemp")
-    stmtTruncate = iris.sql.prepare("TRUNCATE TABLE INQUISIDOR_Object.LicitacionTemp")
     try:
         rs = stmtInsert.execute()
-        rs = stmtTruncate.execute()
     except Exception as err:
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
 }
