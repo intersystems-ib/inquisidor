@@ -1,4 +1,4 @@
-ARG IMAGE=containers.intersystems.com/intersystems/webgateway:latest-cd
+ARG IMAGE=containers.intersystems.com/intersystems/webgateway:latest-em
 FROM $IMAGE
 
 RUN apt-get update

@@ -86,7 +86,7 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                                                 elif detailWinnerAmount.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}PayableAmount":
                                                     licitacion["importeganador"] = detailWinnerAmount.text
             if licitacion.get("importeganador") is not None and licitacion.get("importeganador") != "":
-                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?,?)")
+                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.LicitacionTemp (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?,?)")
                 try:
                     rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"], licitacion["ganadornif"])
                 except Exception as err:
@@ -109,7 +109,7 @@ Method GenerateEmbeddings() As %String [ Language = python ]
 
     flagLoop = True
     while flagLoop:
-        st = iris.sql.prepare("SELECT TOP 50 IdLicitacion, Titulo FROM INQUISIDOR_Object.Licitacion WHERE TituloVectorizado is null ORDER BY ID ASC ")
+        st = iris.sql.prepare("SELECT IdLicitacion, Titulo FROM INQUISIDOR_Object.LicitacionTemp WHERE TituloVectorizado is null ORDER BY ID ASC ")
         resultSet = st.execute()
         df = resultSet.dataframe()
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Iniciando vectorización")
@@ -119,12 +119,20 @@ Method GenerateEmbeddings() As %String [ Language = python ]
 
             df['titulovectorizado'] = embeddings.tolist()
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Iniciando inserción")
-            stmt = iris.sql.prepare("UPDATE INQUISIDOR_Object.Licitacion SET TituloVectorizado = TO_VECTOR(?,DECIMAL) WHERE IdLicitacion = ?")
+            stmt = iris.sql.prepare("UPDATE INQUISIDOR_Object.LicitacionTemp SET TituloVectorizado = TO_VECTOR(?,DECIMAL) WHERE IdLicitacion = ?")
             for index, row in df.iterrows():
                 rs = stmt.execute(str(row['titulovectorizado']), row['idlicitacion'])
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Inserción concluida")
         else:
             flagLoop = False
+    stmtInsert = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) "+
+    "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF FROM INQUISIDOR_Object.LicitacionTemp")
+    stmtTruncate = iris.sql.prepare("TRUNCATE TABLE INQUISIDOR_Object.LicitacionTemp")
+    try:
+        rs = stmtInsert.execute()
+        rs = stmtTruncate.execute()
+    except Exception as err:
+        iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
 }
 
 Storage Default

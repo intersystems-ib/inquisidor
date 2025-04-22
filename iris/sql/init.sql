@@ -7,3 +7,9 @@ CREATE FOREIGN TABLE Inquisidor_Object.CPV (
    description VARCHAR(500)
 ) SERVER Inquisidor.CPVDir FILE 'codes.csv'
 GO
+CREATE INDEX HNSWIndex ON TABLE Inquisidor_Object.Licitacion (TituloVectorizado)
+  AS HNSW(Distance='DotProduct')
+GO
+CREATE INDEX HNSWIndex ON TABLE Inquisidor_Object.LicitacionTemp (TituloVectorizado)
+  AS HNSW(Distance='DotProduct')
+GO
