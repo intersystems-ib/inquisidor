@@ -8,16 +8,29 @@ Method OnRequest(pRequest As Ens.StreamContainer, Output pResponse As Ens.Respon
     set resultXML = ..ReadXML(filename)
     set resultEmbeddings = ""
     set resultEmbeddings = ..GenerateEmbeddings()
-    set sqlTruncate = "TRUNCATE TABLE Inquisidor_Object.LicitacionTemp"
-    set statementTruncate = ##class(%SQL.Statement).%New()
-    set statusTruncate = statementTruncate.%Prepare(sqlTruncate)
-    if ($$$ISOK(statusTruncate)) {
-        set resultSetTruncate = statementTruncate.%Execute()
-        set sc = statusTruncate
+    set sqlInsert = "INSERT INTO Inquisidor_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) "_
+        "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF FROM Inquisidor_Object.LicitacionTemp WHERE IdLicitacion NOT IN "_
+        "(SELECT IdLicitacion FROM Inquisidor_Object.Licitacion)"
+    set statementInsert = ##class(%SQL.Statement).%New()
+    set statusInsert = statementInsert.%Prepare(sqlInsert)
+    if ($$$ISOK(statusInsert)) {
+        set resultSetInsert = statementInsert.%Execute()
+        set sc = statusInsert
+        set sqlTruncate = "TRUNCATE TABLE Inquisidor_Object.LicitacionTemp"
+        set statementTruncate = ##class(%SQL.Statement).%New()
+        set statusTruncate = statementTruncate.%Prepare(sqlTruncate)
+        if ($$$ISOK(statusTruncate)) {
+            set resultSetTruncate = statementTruncate.%Execute()
+            set sc = statusTruncate
+        }
+        else {
+            set sc = statusTruncate
+        }
     }
     else {
         set sc = statusTruncate
     }
+    
     
     Quit $$$OK
 }
@@ -135,12 +148,6 @@ Method GenerateEmbeddings() As %String [ Language = python ]
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Inserción concluida")
         else:
             flagLoop = False
-    stmtInsert = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) "+
-    "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF FROM INQUISIDOR_Object.LicitacionTemp")
-    try:
-        rs = stmtInsert.execute()
-    except Exception as err:
-        iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
 }
 
 Storage Default
