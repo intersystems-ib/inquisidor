@@ -55,41 +55,49 @@
   </form>
   
   <div class="dashboard-grid" *ngIf="lineChartData.length>0 && pieChartData.length>0 && barChartData.length>0">
-      <!-- Gráfico de líneas: Importes anuales por empresa -->
-      <div class="section">
+    <!-- Gráfico de líneas: Importes anuales por empresa -->
+    <div class="section">
+      <span class="title-chart">Importes anuales por adjudicatario</span>
+      <div class="inner-section">
         <ngx-charts-line-chart
-          [results]="lineChartData"
-          [legendPosition]= "legendPosition"
-          [xAxis]="true"
-          [yAxis]="true"
-          [legend]="true"
-          [autoScale]="true"
-          [showXAxisLabel]="true"
-          [showYAxisLabel]="true"
-          [xAxisLabel]="'Año'"
-          [yAxisLabel]="'Importe (€)'">
-        </ngx-charts-line-chart>
-      </div>
-  
-      <!-- Gráfico de tarta: Importe 2025 por empresa -->
-      <!--<div class="section">
-        <h3>Importe total por contratante</h3>
-        <ngx-charts-pie-chart
-          [results]="pieChartData"
-          [view]="[400, 300]"
-          [legendPosition]= "legendPosition"
-          [legend]="true"
-          [labels]="true"
-          [explodeSlices]="false"
-          [doughnut]="true">
-        </ngx-charts-pie-chart>
-      </div>
-    -->
-      <!-- Gráfico de barras: Importes acumulados -->
-      <div class="section">
+        [results]="lineChartData"
+        [legendPosition]= "legendPosition"
+        [legendTitle]="'Leyenda'"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [autoScale]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        [xAxisLabel]="'Año'"
+        [yAxisLabel]="'Importe (€)'">
+      </ngx-charts-line-chart>
+      </div>  
+    </div>
+
+    <!-- Gráfico de tarta: Importe 2025 por empresa -->
+    <!--<div class="section">
+      <h3>Importe total por empresa</h3>
+      <ngx-charts-pie-chart
+        [results]="pieChartData"
+        [view]="[600, 300]"
+        [legendPosition]= "legendPosition"
+        [legend]="true"
+        [labels]="true"
+        [explodeSlices]="false"
+        [doughnut]="true">
+      </ngx-charts-pie-chart>
+    </div>-->
+
+    <!-- Gráfico de barras: Importes acumulados -->
+    <div class="section">
+      <span class="title-chart">Importes acumulados por adjudicatario</span>
+      <div class="inner-section">
         <ngx-charts-bar-vertical
           [results]="barChartData"
           [legendPosition]= "legendPosition"
+          [legendTitle]="'Leyenda'"
+          [barPadding]="24"
           [xAxis]="true"
           [yAxis]="true"
           [legend]="true"
@@ -101,6 +109,7 @@
         </ngx-charts-bar-vertical>
       </div>
     </div>
+  </div>
 
     <div class="overlay-cargando" *ngIf="cargando">
       <div class="spinner-wrapper">

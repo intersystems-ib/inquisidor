@@ -202,7 +202,7 @@ ClassMethod GetStatistics() As %Status
                     while rs.%Next() {
                         set total = rs.%Get("ImporteTotal")
                     }
-                    do statisticsEmpresa.series.%Push({"name":("'"_valueAnyo_"'"),"value":(total)})
+                    do statisticsEmpresa.series.%Push({"name":(" "_valueAnyo_" "),"value":(total)})
                     set stringAnyos = stringAnyos_"|"_valueAnyo
                 }
                 do linealResults.%Push(statisticsEmpresa)
@@ -362,7 +362,7 @@ ClassMethod GetStatisticsContractors() As %Status
                     while rs.%Next() {
                         set total = rs.%Get("ImporteTotal")
                     }
-                    do statisticsContratante.series.%Push({"name":("'"_valueAnyo_"'"),"value":(total)})
+                    do statisticsContratante.series.%Push({"name":(" "_valueAnyo_" "),"value":(total)})
                     set stringAnyos = stringAnyos_"|"_valueAnyo
                 }
                 

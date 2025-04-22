@@ -56,10 +56,13 @@
 
 <div class="dashboard-grid" *ngIf="lineChartData.length>0 && pieChartData.length>0 && barChartData.length>0">
     <!-- Gráfico de líneas: Importes anuales por empresa -->
-    <div class="section">      
-      <ngx-charts-line-chart
+    <div class="section">
+      <span class="title-chart">Importes anuales por adjudicatario</span>
+      <div class="inner-section">
+        <ngx-charts-line-chart
         [results]="lineChartData"
         [legendPosition]= "legendPosition"
+        [legendTitle]="'Leyenda'"
         [xAxis]="true"
         [yAxis]="true"
         [legend]="true"
@@ -69,6 +72,7 @@
         [xAxisLabel]="'Año'"
         [yAxisLabel]="'Importe (€)'">
       </ngx-charts-line-chart>
+      </div>  
     </div>
 
     <!-- Gráfico de tarta: Importe 2025 por empresa -->
@@ -85,20 +89,25 @@
       </ngx-charts-pie-chart>
     </div>-->
 
-    <!-- Gráfico de barras: Importes acumulados 2020–2025 -->
+    <!-- Gráfico de barras: Importes acumulados -->
     <div class="section">
-      <ngx-charts-bar-vertical
-        [results]="barChartData"
-        [legendPosition]= "legendPosition"
-        [xAxis]="true"
-        [yAxis]="true"
-        [legend]="true"
-        [showXAxisLabel]="true"
-        [showYAxisLabel]="true"
-        [xAxisLabel]="'Adjudicatario'"
-        [yAxisLabel]="'Importe (€)'"
-        [showDataLabel]="true">
-      </ngx-charts-bar-vertical>
+      <span class="title-chart">Importes acumulados por adjudicatario</span>
+      <div class="inner-section">
+        <ngx-charts-bar-vertical
+          [results]="barChartData"
+          [legendPosition]= "legendPosition"
+          [legendTitle]="'Leyenda'"
+          [barPadding]="24"
+          [xAxis]="true"
+          [yAxis]="true"
+          [legend]="true"
+          [showXAxisLabel]="true"
+          [showYAxisLabel]="true"
+          [xAxisLabel]="'Adjudicatario'"
+          [yAxisLabel]="'Importe (€)'"
+          [showDataLabel]="true">
+        </ngx-charts-bar-vertical>
+      </div>
     </div>
   </div>
 
