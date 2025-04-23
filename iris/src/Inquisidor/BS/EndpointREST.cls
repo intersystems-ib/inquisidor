@@ -246,7 +246,7 @@ ClassMethod GetWinners() As %Status
         
         set filter = %request.Data("filter",1)
         set sql = 
-            "SELECT DISTINCT GanadorNIF, Ganador  FROM Inquisidor_Object.Licitacion WHERE Ganador like '%'_?_'%' GROUP BY GanadorNIF"
+            "SELECT * FROM (SELECT DISTINCT(GanadorNIF), Ganador FROM Inquisidor_Object.Licitacion WHERE Ganador like '%'_?_'%') GROUP BY GanadorNIF ORDER BY Ganador ASC"
 
         set statement = ##class(%SQL.Statement).%New()
         $$$ThrowOnError(statement.%Prepare(sql))
