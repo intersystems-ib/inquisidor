@@ -98,14 +98,14 @@ ClassMethod GetTenders() As %Status
                 Set tArgs($i(tArgs)) = description
 
                 set sql = 
-                    "SELECT TOP 300 * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion "
+                    "SELECT * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion "
                 set endSQL = ")"_          
                     "WHERE Similitud > 0.5 "_
                     "ORDER BY Similitud DESC"
             }
             else {
                 set sql =
-                    "SELECT TOP 300 %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "         
+                    "SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "         
                 set endSQL = " ORDER BY FechaAdjudicacion DESC"
             }
             
@@ -155,7 +155,13 @@ ClassMethod GetTenders() As %Status
         set %response.Status = ..#HTTP200OK
         set tempStream = ##class(%Stream.TmpCharacter).%New()
         do array.%ToJSON(tempStream)
-        write tempStream.Read()
+        // w tempStream.Read(tempStream.SizeGet())
+        set len = tempStream.SizeGet()
+        While len > 0 {
+            set line=tempStream.Read($S(len>32656:32656,1:len))
+            set len=len-$length(line)
+            write line
+        }
 
     } Catch (ex) {
         Do ##class(%REST.Impl).%SetStatusCode("400")
