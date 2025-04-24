@@ -93,7 +93,7 @@ ClassMethod GetTenders() As %Status
                 set stringCPV = stringCPV_"|"_valueCPV.Code
             }
             
-            if (filtros.titulo '= "") {
+            if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 1)) {
                 set description = ..GetEncoding(filtros.titulo)
                 Set tArgs($i(tArgs)) = description
 
@@ -110,6 +110,12 @@ ClassMethod GetTenders() As %Status
             }
             
             set generalCondition = 0
+
+            if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 0)) {
+                Set whereList = whereList_$ListBuild("%SQLUPPER(Titulo) LIKE '%'_%SQLUPPER(?)_'%'")
+                Set tArgs($i(tArgs)) = filtros.titulo
+                Set generalCondition = 1
+            }
 
             if (stringEmpresa '= "") {
                 Set whereList = whereList_$ListBuild("GanadorNIF %INLIST ?")

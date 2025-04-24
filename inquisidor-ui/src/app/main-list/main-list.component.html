@@ -19,7 +19,7 @@
     <mat-form-field appearance="outline" class="field-25">
       <mat-label>Buscar por título</mat-label>
       <input matInput [formControl]="titulo" placeholder="Filtra por cualquier campo..." />
-    </mat-form-field>
+    </mat-form-field>    
 
     <mat-form-field class="field-25" appearance="outline">
       <mat-label>Buscar contratantes</mat-label>
@@ -88,6 +88,7 @@
     Debes introducir un título.
   </div>
 
+  <mat-checkbox [formControl]="busquedaVectorial" matTooltip="Búsqueda vectorial">Búsqueda vectorial</mat-checkbox>
   <button mat-raised-button color="primary" type="submit" [disabled]="formulario.invalid">
     Enviar
   </button>

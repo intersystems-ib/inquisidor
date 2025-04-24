@@ -17,6 +17,7 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatChipListbox, MatChipOption, MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-main-list',
@@ -37,6 +38,7 @@ import { Router } from '@angular/router';
     MatChipsModule,
     MatChipListbox,
     MatChipOption,
+    MatCheckboxModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './main-list.component.html',
@@ -52,6 +54,7 @@ export class MainListComponent implements OnInit{
   cpvSearch = new FormControl('');
   cpvs = new FormControl<{ Code: string; Description: string }[]>([]);
   titulo = new FormControl<string>("");
+  busquedaVectorial = new FormControl<boolean>(false);
   
   resultados: { Name: string; NIF: string }[] = [];
   resultado: any = null;
@@ -84,7 +87,8 @@ export class MainListComponent implements OnInit{
       contratantes: this.contratantes,
       cpvSearch: this.cpvSearch,
       cpvs: this.cpvs,
-      titulo: this.titulo
+      titulo: this.titulo,
+      busquedaVectorial: this.busquedaVectorial
     });
 
     this.searchSub = this.empresaSearch.valueChanges
@@ -216,7 +220,8 @@ export class MainListComponent implements OnInit{
         empresas: this.empresas.value,
         titulo: this.titulo.value,
         contratantes: this.contratantes.value,
-        cpvs: this.cpvs.value
+        cpvs: this.cpvs.value,
+        busquedaVectorial: this.busquedaVectorial.value
       };
       this.filterList({"filtros": this.resultado});
     }
