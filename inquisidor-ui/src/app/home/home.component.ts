@@ -9,12 +9,14 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MainChartsComponent } from "../main-charts/main-charts.component";
 import { ContratanteChartsComponent } from '../contratante-charts/contratante-charts.component';
+import { MainDashboardComponent } from '../main-dashboard/main-dashboard.component';
 
 @Component({
   selector: 'app-home',
   imports: [MainListComponent,
     MainChartsComponent,
     ContratanteChartsComponent,
+    MainDashboardComponent,
     CommonModule,
     MatSidenavModule,
     MatToolbarModule,

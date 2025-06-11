@@ -13,6 +13,7 @@ XData UrlMap [ XMLNamespace = "https://www.intersystems.com/urlmap" ]
 	<Route Url="/test" Method="GET" Call="Test" />
     <Route Url="/getTenders" Method="POST" Call="GetTenders" />
     <Route Url="/getStatistics" Method="POST" Call="GetStatistics" />
+    <Route Url="/getDashboardStatistics" Method="POST" Call="GetDashboardStatistics" />
     <Route Url="/getWinners" Method="GET" Call="GetWinners" />
     <Route Url="/getContractors" Method="GET" Call="GetContractors" />
     <Route Url="/getStatisticsContractors" Method="POST" Call="GetStatisticsContractors" />
@@ -204,9 +205,9 @@ ClassMethod GetStatistics() As %Status
                 while iterAnyos.%GetNext(.keyAnyo, .valueAnyo)  {
                     set total = 0
                     set sql = 
-                    "SELECT SUM(ImporteGanador) As ImporteTotal, YEAR(FechaAdjudicacion) As Anyo, Ganador "_
-                    "FROM Inquisidor_Object.Licitacion WHERE GanadorNIF = ? AND YEAR(FechaAdjudicacion) = ? "_
-                    "GROUP BY GanadorNIF, Anyo"
+                    "SELECT SUM(ImporteGanador) As ImporteTotal, Anio, Ganador "_
+                    "FROM Inquisidor_Object.Licitacion WHERE GanadorNIF = ? AND Anio = ? "_
+                    "GROUP BY GanadorNIF, Anio"
 
                     set statement = ##class(%SQL.Statement).%New()
                     $$$ThrowOnError(statement.%Prepare(sql))
@@ -220,7 +221,7 @@ ClassMethod GetStatistics() As %Status
                 do linealResults.%Push(statisticsEmpresa)
                 set sql = 
                     "SELECT SUM(ImporteGanador) As ImporteTotal "_
-                    "FROM Inquisidor_Object.Licitacion WHERE GanadorNIF = ? AND YEAR(FechaAdjudicacion) %INLIST ? "
+                    "FROM Inquisidor_Object.Licitacion WHERE GanadorNIF = ? AND Anio %INLIST ? "
                 set statement = ##class(%SQL.Statement).%New()
                 $$$ThrowOnError(statement.%Prepare(sql))
                 set rs = statement.%Execute(valueEmpresa.NIF, $LISTFROMSTRING(stringAnyos, "|"))
@@ -311,7 +312,7 @@ ClassMethod GetYears() As %Status
         If '##class(%REST.Impl).%CheckAccepts("application/json") Do ##class(%REST.Impl).%ReportRESTError(..#HTTP406NOTACCEPTABLE,$$$ERROR($$$RESTBadAccepts)) Quit
         
         set sql = 
-            "SELECT DISTINCT YEAR(FechaAdjudicacion) FROM Inquisidor_Object.Licitacion"
+            "SELECT DISTINCT Anio FROM Inquisidor_Object.Licitacion"
 
         set statement = ##class(%SQL.Statement).%New()
         $$$ThrowOnError(statement.%Prepare(sql))
@@ -364,9 +365,9 @@ ClassMethod GetStatisticsContractors() As %Status
                 while iterAnyos.%GetNext(.keyAnyo, .valueAnyo)  {
                     set total = 0
                     set sql = 
-                    "SELECT SUM(ImporteGanador) As ImporteTotal, YEAR(FechaAdjudicacion) As Anyo, Contratante "_
-                    "FROM Inquisidor_Object.Licitacion WHERE Contratante = ? AND YEAR(FechaAdjudicacion) = ? "_
-                    "GROUP BY Contratante, Anyo"
+                    "SELECT SUM(ImporteGanador) As ImporteTotal, Anio, Contratante "_
+                    "FROM Inquisidor_Object.Licitacion WHERE Contratante = ? AND Anio = ? "_
+                    "GROUP BY Contratante, Anio"
 
                     set statement = ##class(%SQL.Statement).%New()
                     $$$ThrowOnError(statement.%Prepare(sql))
@@ -381,7 +382,7 @@ ClassMethod GetStatisticsContractors() As %Status
                 do linealResults.%Push(statisticsContratante)
                 set sql = 
                     "SELECT SUM(ImporteGanador) As ImporteTotal "_
-                    "FROM Inquisidor_Object.Licitacion WHERE Contratante = ? AND YEAR(FechaAdjudicacion) %INLIST ? "
+                    "FROM Inquisidor_Object.Licitacion WHERE Contratante = ? AND Anio %INLIST ? "
                 set statement = ##class(%SQL.Statement).%New()
                 $$$ThrowOnError(statement.%Prepare(sql))
                 set rs = statement.%Execute(valueContratante, $LISTFROMSTRING(stringAnyos,"|"))
@@ -428,6 +429,91 @@ ClassMethod GetCPV() As %Status
         set %response.Status = ..#HTTP200OK
         set tempStream = ##class(%Stream.TmpCharacter).%New()
         do array.%ToJSON(tempStream)
+        write tempStream.Read()
+
+    } Catch (ex) {
+        Do ##class(%REST.Impl).%SetStatusCode("400")
+        Do ##class(%REST.Impl).%WriteResponse(ex.DisplayString())
+    }
+    Quit $$$OK
+}
+
+ClassMethod GetDashboardStatistics() As %Status
+{
+    Try {
+        If '##class(%REST.Impl).%CheckAccepts("application/json") Do ##class(%REST.Impl).%ReportRESTError(..#HTTP406NOTACCEPTABLE,$$$ERROR($$$RESTBadAccepts)) Quit
+        
+        // Reading the body of the http call with the person data
+        
+        set dynamicBody = {}.%FromJSON(%request.Content)
+
+        set filtros = dynamicBody.%Get("filtros")
+
+        set winnersResults = []
+        
+        set contractorsResults = []
+
+        set totalByYear = []
+
+        set results = {}        
+
+        if ($ISOBJECT(filtros)) {
+            set iterAnyos = filtros.%GetIterator()  
+            set stringAnyos = ""      
+            set statisticsTotals = {}
+            set statisticsTotals.name = "Total"
+            set statisticsTotals.series = []
+            while iterAnyos.%GetNext(.keyAnyo, .valueAnyo)  {
+                set total = 0
+                set sql = 
+                "SELECT SUM(ImporteGanador) As ImporteTotal, Anio "_
+                "FROM Inquisidor_Object.Licitacion WHERE Anio = ? "_
+                "GROUP BY Anio"
+
+                set statement = ##class(%SQL.Statement).%New()
+                $$$ThrowOnError(statement.%Prepare(sql))
+                set rs = statement.%Execute(valueAnyo)
+                while rs.%Next() {
+                    set total = rs.%Get("ImporteTotal")
+                }
+                do statisticsTotals.series.%Push({"name":(" "_valueAnyo_" "),"value":(total)})
+                do totalByYear.%Push(statisticsTotals)
+                set stringAnyos = stringAnyos_"|"_valueAnyo
+            }  
+             
+            set sql = 
+            "SELECT TOP 5 SUM(ImporteGanador) As ImporteTotal, Ganador "_ 
+            "FROM Inquisidor_Object.Licitacion WHERE Anio %INLIST ? GROUP BY GanadorNIF ORDER BY ImporteTotal DESC"
+
+            set statement = ##class(%SQL.Statement).%New()
+            $$$ThrowOnError(statement.%Prepare(sql))
+            
+            set rs = statement.%Execute($LISTFROMSTRING(stringAnyos,"|"))
+            while rs.%Next() {
+                set total = rs.%Get("ImporteTotal")
+                set winner = rs.%Get("Ganador")
+                do winnersResults.%Push({"ganador":(" "_winner_" "),"total":(total)})
+            }
+
+            set sql = 
+            "SELECT TOP 5 SUM(ImporteGanador) As ImporteTotal, Contratante "_ 
+            "FROM Inquisidor_Object.Licitacion WHERE Anio %INLIST ? GROUP BY Contratante ORDER BY ImporteTotal DESC"
+
+            set statement = ##class(%SQL.Statement).%New()
+            $$$ThrowOnError(statement.%Prepare(sql))
+            
+            set rs = statement.%Execute($LISTFROMSTRING(stringAnyos,"|"))
+            while rs.%Next() {
+                set total = rs.%Get("ImporteTotal")
+                set contractor = rs.%Get("Contratante")
+                do contractorsResults.%Push({"licitador":(" "_contractor_" "),"total":(total)})
+            }
+        }
+        set results = {"winners": (winnersResults), "contractors": (contractorsResults), "totals": (totalByYear)}
+    
+        set %response.Status = ..#HTTP200OK
+        set tempStream = ##class(%Stream.TmpCharacter).%New()
+        do results.%ToJSON(tempStream)
         write tempStream.Read()
 
     } Catch (ex) {

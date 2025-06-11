@@ -57,4 +57,10 @@ export class IrisService {
     )
   }
 
+  getDashboardStatistics(filters: any): Observable<any> {
+    return this.http.post<Response>(
+      IRIS_API + 'getDashboardStatistics', filters, httpOptions
+    )
+  }
+
 }

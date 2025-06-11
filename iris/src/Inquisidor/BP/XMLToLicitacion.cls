@@ -8,8 +8,8 @@ Method OnRequest(pRequest As Ens.StreamContainer, Output pResponse As Ens.Respon
     set resultXML = ..ReadXML(filename)
     set resultEmbeddings = ""
     set resultEmbeddings = ..GenerateEmbeddings()
-    set sqlInsert = "INSERT INTO Inquisidor_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) "_
-        "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF FROM Inquisidor_Object.LicitacionTemp WHERE IdLicitacion NOT IN "_
+    set sqlInsert = "INSERT INTO Inquisidor_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF, Anio) "_
+        "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF, Anio FROM Inquisidor_Object.LicitacionTemp WHERE IdLicitacion NOT IN "_
         "(SELECT IdLicitacion FROM Inquisidor_Object.Licitacion)"
     set statementInsert = ##class(%SQL.Statement).%New()
     set statusInsert = statementInsert.%Prepare(sqlInsert)
@@ -45,7 +45,7 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
         tree = ET.parse(xmlPath)
         root = tree.getroot()
         for entry in root.iter("{http://www.w3.org/2005/Atom}entry"):
-            licitacion = {"titulo": "", "resumen": "", "idlicitacion": "", "url": "", "contratante": "", "urlcontratante": "", "estado": "", "valorestimado": "", "importetotal": "", "importetotalsinimpuestos": "", "clasificacion": "", "localizacion": "", "fechaadjudicacion": "", "ganador": "", "importeganadorsinimpuestos": "", "importeganador": ""}
+            licitacion = {"titulo": "", "resumen": "", "idlicitacion": "", "url": "", "contratante": "", "urlcontratante": "", "estado": "", "valorestimado": "", "importetotal": "", "importetotalsinimpuestos": "", "clasificacion": "", "localizacion": "", "fechaadjudicacion": "", "ganador": "", "importeganadorsinimpuestos": "", "importeganador": "", "anio": ""}
             for tags in entry:
                 if tags.tag == "{http://www.w3.org/2005/Atom}title":
                     licitacion["titulo"] = tags.text
@@ -90,6 +90,7 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                             for infoResult in detailTags:
                                 if infoResult.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}AwardDate":
                                     licitacion["fechaadjudicacion"] = infoResult.text
+                                    licitacion["anio"] = infoResult.text.split("-")[0]
                                 elif infoResult.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}WinningParty":
                                     for detailWinner in infoResult:
                                         if detailWinner.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}PartyName":
@@ -109,9 +110,9 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                                                 elif detailWinnerAmount.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}PayableAmount":
                                                     licitacion["importeganador"] = detailWinnerAmount.text
             if licitacion.get("importeganador") is not None and licitacion.get("importeganador") != "":
-                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.LicitacionTemp (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?,?)")
+                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.LicitacionTemp (Titulo, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF, Anio) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?,?,?,?,?)")
                 try:
-                    rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"], licitacion["ganadornif"])
+                    rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"], licitacion["ganadornif"], licitacion["anio"])
                 except Exception as err:
                     iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
         return "Success"

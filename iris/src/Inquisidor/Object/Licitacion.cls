@@ -37,6 +37,8 @@ Property Clasificacion As %String(MAXLEN = 10);
 
 Property Localizacion As %String(MAXLEN = 200);
 
+Property Anio As %Integer;
+
 Index IndexContratante On Contratante;
 
 Index IndexGanador On Ganador;
@@ -48,6 +50,8 @@ Index IndexClasificacion On Clasificacion;
 Index IndexLocalizacion On Localizacion;
 
 Index IndexIdLicitation On IdLicitacion [ PrimaryKey ];
+
+Index IndexAnio On Anio;
 
 Storage Default
 {
@@ -86,13 +90,16 @@ Storage Default
 <Value>Ganador</Value>
 </Value>
 <Value name="12">
-<Value>Clasificacion</Value>
+<Value>GanadorNIF</Value>
 </Value>
 <Value name="13">
-<Value>Localizacion</Value>
+<Value>Clasificacion</Value>
 </Value>
 <Value name="14">
-<Value>GanadorNIF</Value>
+<Value>Localizacion</Value>
+</Value>
+<Value name="15">
+<Value>Anio</Value>
 </Value>
 </Data>
 <Data name="_CDM_ImporteGanador">
