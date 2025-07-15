@@ -63,7 +63,7 @@ export class MainListComponent implements OnInit{
 
   resultadosCPV: { Code: string; Description: string }[] = [];
 
-  columnas: string[] = ['titulo', 'contratante', 'fecha', 'ganador', 'importe', 'similitud'];
+  columnas: string[] = ['titulo', 'contratante', 'fecha', 'ganador', 'importe', 'similitud', 'diferencia'];
   datos: Array<any> = [];
   dataSource = new MatTableDataSource(this.datos);
 

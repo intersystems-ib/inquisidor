@@ -99,14 +99,14 @@ ClassMethod GetTenders() As %Status
                 Set tArgs($i(tArgs)) = description
 
                 set sql = 
-                    "SELECT * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL FROM Inquisidor_Object.Licitacion "
+                    "SELECT * FROM (SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL, CAST((ImporteGanador*100/ImporteTotal) - 100 As Integer) As Diferencia FROM Inquisidor_Object.Licitacion "
                 set endSQL = ")"_          
                     "WHERE Similitud > 0.5 "_
                     "ORDER BY Similitud DESC"
             }
             else {
                 set sql =
-                    "SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL FROM Inquisidor_Object.Licitacion "         
+                    "SELECT %ID, Contratante, TO_CHAR(FechaAdjudicacion,'YYYY-MM-DD') As FechaAdjudicacion, Ganador, ImporteGanador, Titulo, '1' As Similitud, URL, CAST((ImporteGanador*100/ImporteTotal) As Integer) - 100 As Diferencia FROM Inquisidor_Object.Licitacion "         
                 set endSQL = " ORDER BY FechaAdjudicacion DESC"
             }
             
@@ -156,7 +156,8 @@ ClassMethod GetTenders() As %Status
                     "importe": (rs.%Get("ImporteGanador")),
                     "titulo": (rs.%Get("Titulo")),
                     "similitud": (rs.%Get("Similitud")),
-                    "URL": (rs.%Get("URL"))
+                    "URL": (rs.%Get("URL")),
+                    "diferencia":(rs.%Get("Diferencia"))
                 })
         }
         set %response.Status = ..#HTTP200OK
