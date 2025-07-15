@@ -464,26 +464,12 @@ ClassMethod GetDashboardStatistics() As %Status
             set statisticsTotals.name = "Total"
             set statisticsTotals.series = []
             while iterAnyos.%GetNext(.keyAnyo, .valueAnyo)  {
-                set total = 0
-                set sql = 
-                "SELECT SUM(ImporteGanador) As ImporteTotal, Anio "_
-                "FROM Inquisidor_Object.Licitacion WHERE Anio = ? "_
-                "GROUP BY Anio"
-
-                set statement = ##class(%SQL.Statement).%New()
-                $$$ThrowOnError(statement.%Prepare(sql))
-                set rs = statement.%Execute(valueAnyo)
-                while rs.%Next() {
-                    set total = rs.%Get("ImporteTotal")
-                }
-                do statisticsTotals.series.%Push({"name":(" "_valueAnyo_" "),"value":(total)})
-                do totalByYear.%Push(statisticsTotals)
                 set stringAnyos = stringAnyos_"|"_valueAnyo
             }  
              
             set sql = 
-            "SELECT TOP 5 SUM(ImporteGanador) As ImporteTotal, Ganador "_ 
-            "FROM Inquisidor_Object.Licitacion WHERE Anio %INLIST ? GROUP BY GanadorNIF ORDER BY ImporteTotal DESC"
+            "SELECT SUM(ImporteGanador) As ImporteTotal, Anio "_ 
+            "FROM Inquisidor_Object.Licitacion WHERE Anio %INLIST ? GROUP BY Anio ORDER BY Anio ASC"
 
             set statement = ##class(%SQL.Statement).%New()
             $$$ThrowOnError(statement.%Prepare(sql))
@@ -491,25 +477,12 @@ ClassMethod GetDashboardStatistics() As %Status
             set rs = statement.%Execute($LISTFROMSTRING(stringAnyos,"|"))
             while rs.%Next() {
                 set total = rs.%Get("ImporteTotal")
-                set winner = rs.%Get("Ganador")
-                do winnersResults.%Push({"ganador":(" "_winner_" "),"total":(total)})
-            }
-
-            set sql = 
-            "SELECT TOP 5 SUM(ImporteGanador) As ImporteTotal, Contratante "_ 
-            "FROM Inquisidor_Object.Licitacion WHERE Anio %INLIST ? GROUP BY Contratante ORDER BY ImporteTotal DESC"
-
-            set statement = ##class(%SQL.Statement).%New()
-            $$$ThrowOnError(statement.%Prepare(sql))
-            
-            set rs = statement.%Execute($LISTFROMSTRING(stringAnyos,"|"))
-            while rs.%Next() {
-                set total = rs.%Get("ImporteTotal")
-                set contractor = rs.%Get("Contratante")
-                do contractorsResults.%Push({"licitador":(" "_contractor_" "),"total":(total)})
+                set anio = rs.%Get("Anio")
+                do statisticsTotals.series.%Push({"name":(" "_anio_" "),"value":(total)})
+                do totalByYear.%Push(statisticsTotals)
             }
         }
-        set results = {"winners": (winnersResults), "contractors": (contractorsResults), "totals": (totalByYear)}
+        set results = {"totals": (totalByYear)}
     
         set %response.Status = ..#HTTP200OK
         set tempStream = ##class(%Stream.TmpCharacter).%New()

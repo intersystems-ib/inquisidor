@@ -1,6 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
     <mat-sidenav #sidenav mode="side" [opened]="opened" class="custom-sidenav">
         <mat-nav-list>
+             <mat-list-item (click)="show = ''; toggleSidenav(sidenav)"><span class="sidenav-link">Inicio</span></mat-list-item>
             <mat-list-item (click)="show = 'main-list'; toggleSidenav(sidenav)"><span class="sidenav-link">Licitaciones</span></mat-list-item>
             <mat-list-item (click)="show = 'main-charts'; toggleSidenav(sidenav)"><span class="sidenav-link">Adjudicatarios</span></mat-list-item>
             <mat-list-item (click)="show = 'contratante-charts'; toggleSidenav(sidenav)"><span class="sidenav-link">Contratantes</span></mat-list-item>
@@ -20,7 +21,7 @@
             <app-main-list *ngIf="show === 'main-list'"></app-main-list>
             <app-main-charts *ngIf="show === 'main-charts'"></app-main-charts>
             <app-contratante-charts *ngIf="show === 'contratante-charts'"></app-contratante-charts>
-            <app-main-dashboard *ngIf="show === ''"></app-main-dashboard>
+            <app-main-dashboard *ngIf="show === ''" (selectionEvent)="updateShow($event)"></app-main-dashboard>
         </div>
     </mat-sidenav-content>
 </mat-sidenav-container>

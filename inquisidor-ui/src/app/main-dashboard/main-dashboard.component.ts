@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { LegendPosition, NgxChartsModule } from '@swimlane/ngx-charts';
 import { IrisService } from '../services/iris.service';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -52,8 +52,6 @@ export class MainDashboardComponent implements OnInit{
   datosGanador: Array<any> = [];
   dataSourceGanador = new MatTableDataSource(this.datosGanador);
 
-  private searchSub: Subscription;
-
   colorScheme = {
     domain: ['#1976d2', '#388e3c', '#fbc02d', '#e64a19']
   };
@@ -63,9 +61,7 @@ export class MainDashboardComponent implements OnInit{
 
   lineChartData = [];
 
-  pieChartData = [];
-
-  barChartData = [];
+  @Output() selectionEvent = new EventEmitter<string>();
 
   constructor(private irisService: IrisService,
     private fb: FormBuilder,
@@ -73,22 +69,8 @@ export class MainDashboardComponent implements OnInit{
   ) {
 
     const currentYear = new Date().getFullYear();
-    this.listaAnios = Array.from({ length: 5 }, (_, i) => currentYear - i).reverse();
+    this.listaAnios = Array.from({ length: 10 }, (_, i) => currentYear - i).reverse();
     
-    this.searchSub = this.empresaSearch.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        switchMap(term => {
-          if (!term || term.length < 3) return of([]);
-          return from(this.irisService.getWinners(term)).pipe(
-            catchError(() => this.router.navigate(['login']))
-          );
-        })
-      )
-      .subscribe(res => {
-        this.resultados = res;
-      });
   }
 
   ngOnInit() {
@@ -97,17 +79,12 @@ export class MainDashboardComponent implements OnInit{
   }
 
   ngOnDestroy(): void {
-    this.searchSub.unsubscribe();
   }
   
   getDashboardStatistics(filter: any) {
     this.cargando = true;
       this.irisService.getDashboardStatistics(filter).subscribe({
         next: res => {  
-          this.datosLicitador = res.contractors;
-          this.dataSourceLicitador = new MatTableDataSource(this.datosLicitador);
-          this.datosGanador = res.winners;
-          this.dataSourceGanador = new MatTableDataSource(this.datosGanador);
           this.lineChartData = res.totals;
         },
         error: err => {
@@ -118,6 +95,11 @@ export class MainDashboardComponent implements OnInit{
         complete: () =>  {
           this.cargando = false;
         }
-      });
-    }
+    });
+  }
+
+  optionSelected(selected:string) {
+    this.selectionEvent.emit(selected);
+  }
+  
 }

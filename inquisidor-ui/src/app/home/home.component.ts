@@ -37,4 +37,8 @@ export class HomeComponent {
   toggleSidenav(sidenav: any) {
     sidenav.toggle();
   }
+
+  updateShow(selection:string) {
+    this.show = selection;
+  }
 }
