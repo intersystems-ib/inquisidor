@@ -53,6 +53,8 @@ Index IndexIdLicitation On IdLicitacion [ PrimaryKey ];
 
 Index IndexAnio On Anio;
 
+Index IndexTitulo On (Titulo) As %iFind.Index.Basic(INDEXOPTION = 0, LANGUAGE = "es");
+
 Storage Default
 {
 <Data name="LicitacionDefaultData">
