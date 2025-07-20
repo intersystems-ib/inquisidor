@@ -9,12 +9,18 @@ Method OnTask() As %Status
 {
     $$$TRACE("Connecting")
     set tSC = $$$OK
-    
-    
-    do ..ConnectAndDownload(..InboundZipPath)
-    set msg = ##class(Inquisidor.Message.LicitacionRequest).%New()
-    set tSC=..BusinessHost.ProcessInput(msg)
+    set currentDate = $ZDATE($HOROLOG,3)
 
+    if ('$DATA(^$GLOBAL("^LASTZIP"))) {
+        if ($GET(^LASTZIP) '= currentDate){
+            do ..ConnectAndDownload(..InboundZipPath)
+            set msg = ##class(Inquisidor.Message.LicitacionRequest).%New()
+            set tSC=..BusinessHost.ProcessInput(msg)
+
+            set ^LASTZIP = currentDate
+        }
+    }
+    
     $$$TRACE("Finishing connection")
 
     Quit tSC
