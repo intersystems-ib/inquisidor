@@ -57,7 +57,7 @@
   <div class="dashboard-grid" *ngIf="lineChartData.length>0 && pieChartData.length>0 && barChartData.length>0">
     <!-- Gráfico de líneas: Importes anuales por empresa -->
     <div class="section">
-      <span class="title-chart">Importes anuales por adjudicatario</span>
+      <span class="title-chart">Importes anuales por contratante</span>
       <div class="inner-section">
         <ngx-charts-line-chart
         [results]="lineChartData"
@@ -91,7 +91,7 @@
 
     <!-- Gráfico de barras: Importes acumulados -->
     <div class="section">
-      <span class="title-chart">Importes acumulados por adjudicatario</span>
+      <span class="title-chart">Importes acumulados por contratante</span>
       <div class="inner-section">
         <ngx-charts-bar-vertical
           [results]="barChartData"
@@ -103,7 +103,7 @@
           [legend]="true"
           [showXAxisLabel]="true"
           [showYAxisLabel]="true"
-          [xAxisLabel]="'Adjudicatario'"
+          [xAxisLabel]="'Contratante'"
           [yAxisLabel]="'Importe (€)'"
           [showDataLabel]="true">
         </ngx-charts-bar-vertical>
