@@ -3,9 +3,11 @@
         <mat-nav-list>
             <mat-list-item (click)="show = ''; toggleSidenav(sidenav)"><span class="sidenav-link">Inicio</span></mat-list-item>
             <mat-divider></mat-divider>
-            <mat-list-item (click)="show = 'main-list'; toggleSidenav(sidenav)"><span class="sidenav-link">Licitaciones</span></mat-list-item>
+            <mat-list-item (click)="show = 'main-published'; toggleSidenav(sidenav)"><span class="sidenav-link">Publicadas</span></mat-list-item>
             <mat-divider></mat-divider>
-            <mat-list-item (click)="show = 'main-charts'; toggleSidenav(sidenav)"><span class="sidenav-link">Adjudicatarios</span></mat-list-item>
+            <mat-list-item (click)="show = 'main-list'; toggleSidenav(sidenav)"><span class="sidenav-link">Adjudicadas</span></mat-list-item>
+            <mat-divider></mat-divider>
+            <mat-list-item (click)="show = 'main-charts'; toggleSidenav(sidenav)"><span class="sidenav-link">Ganadores</span></mat-list-item>
             <mat-divider></mat-divider>
             <mat-list-item (click)="show = 'contratante-charts'; toggleSidenav(sidenav)"><span class="sidenav-link">Contratantes</span></mat-list-item>
             <mat-divider></mat-divider>
@@ -23,6 +25,7 @@
         </mat-toolbar>
 
         <div class="main-content">            
+            <app-main-published *ngIf="show === 'main-published'"></app-main-published>
             <app-main-list *ngIf="show === 'main-list'"></app-main-list>
             <app-main-charts *ngIf="show === 'main-charts'"></app-main-charts>
             <app-contratante-charts *ngIf="show === 'contratante-charts'"></app-contratante-charts>

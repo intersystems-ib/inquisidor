@@ -63,4 +63,9 @@ export class IrisService {
     )
   }
 
+  getPublished(description: any): Observable<any> {
+    return this.http.post<Response>(
+      IRIS_API + 'getPublished', description, httpOptions
+    )
+  }
 }

@@ -7,7 +7,7 @@ Method OnRequest(pRequest As Ens.StreamContainer, Output pResponse As Ens.Respon
 
     set resultXML = ..ReadXML(filename)
     set resultEmbeddings = ""
-    set resultEmbeddings = ..GenerateEmbeddings()
+    set resultEmbeddings = ..GenerateEmbeddings("INQUISIDOR_Object.LicitacionTemp")
     set sqlInsert = "INSERT INTO Inquisidor_Object.Licitacion (Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF, Anio) "_
         "SELECT Titulo, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaAdjudicacion, Ganador, ImporteGanadorSinImpuestos, ImporteGanador, GanadorNIF, Anio FROM Inquisidor_Object.LicitacionTemp WHERE IdLicitacion NOT IN "_
         "(SELECT IdLicitacion FROM Inquisidor_Object.Licitacion)"
@@ -30,7 +30,29 @@ Method OnRequest(pRequest As Ens.StreamContainer, Output pResponse As Ens.Respon
     else {
         set sc = statusTruncate
     }
-    
+    set resultEmbeddings = ..GenerateEmbeddings("INQUISIDOR_Object.LicitacionPubTemp")
+    set sqlInsert = "INSERT INTO Inquisidor_Object.LicitacionPub (Titulo, Actualizado, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaLimite, HoraLimite) "_
+        "SELECT Titulo, Actualizado, TituloVectorizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaLimite, HoraLimite FROM Inquisidor_Object.LicitacionPubTemp WHERE IdLicitacion NOT IN "_
+        "(SELECT IdLicitacion FROM Inquisidor_Object.LicitacionPub)"
+    set statementInsert = ##class(%SQL.Statement).%New()
+    set statusInsert = statementInsert.%Prepare(sqlInsert)
+    if ($$$ISOK(statusInsert)) {
+        set resultSetInsert = statementInsert.%Execute()
+        set sc = statusInsert
+        set sqlTruncate = "TRUNCATE TABLE Inquisidor_Object.LicitacionPubTemp"
+        set statementTruncate = ##class(%SQL.Statement).%New()
+        set statusTruncate = statementTruncate.%Prepare(sqlTruncate)
+        if ($$$ISOK(statusTruncate)) {
+            set resultSetTruncate = statementTruncate.%Execute()
+            set sc = statusTruncate
+        }
+        else {
+            set sc = statusTruncate
+        }
+    }
+    else {
+        set sc = statusTruncate
+    }
     
     Quit $$$OK
 }
@@ -49,6 +71,8 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
             for tags in entry:
                 if tags.tag == "{http://www.w3.org/2005/Atom}title":
                     licitacion["titulo"] = tags.text
+                if tags.tag == "{http://www.w3.org/2005/Atom}updated":
+                    licitacion["actualizado"] = tags.text
                 if tags.tag == "{http://www.w3.org/2005/Atom}summary":
                     licitacion["resumen"] = tags.text
                 if tags.tag == "{http://www.w3.org/2005/Atom}id":
@@ -86,6 +110,14 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                                     for detailLocalization in infoProcurement:
                                         if detailLocalization.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}CountrySubentity":
                                             licitacion["localizacion"] = detailLocalization.text
+                        elif detailTags.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}TenderingProcess":
+                            for infoProcess in detailTags:
+                                if infoProcess.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}TenderSubmissionDeadlinePeriod":
+                                    for detailDeadline in infoProcess:
+                                        if detailDeadline.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}EndDate":
+                                            licitacion["fechalimite"] = detailDeadline.text
+                                        elif detailDeadline.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}EndTime":
+                                            licitacion["horalimite"] = detailDeadline.text
                         elif detailTags.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2}TenderResult":
                             for infoResult in detailTags:
                                 if infoResult.tag == "{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}AwardDate":
@@ -115,13 +147,19 @@ Method ReadXML(xmlPath As %String) As %String [ Language = python ]
                     rs = stmt.execute(licitacion["titulo"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechaadjudicacion"], licitacion["ganador"], licitacion["importeganadorsinimpuestos"], licitacion["importeganador"], licitacion["ganadornif"], licitacion["anio"])
                 except Exception as err:
                     iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
+            elif licitacion.get("estado") == "PUB" and licitacion.get("fechalimite") is not None and licitacion.get("fechalimite") != "":
+                stmt = iris.sql.prepare("INSERT INTO INQUISIDOR_Object.LicitacionPubTemp (Titulo, Actualizado, Resumen, IdLicitacion, URL, Contratante, URLContratante, Estado, ValorEstimado, ImporteTotal, ImporteTotalSinImpuestos, Clasificacion, Localizacion, FechaLimite, HoraLimite) VALUES (?,TO_DATE(?, 'YYYY-MM-DD\"T\"HH24:MI:SS.FF+TZH:TZM'),?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'YYYY-MM-DD'),?)")
+                try:
+                    rs = stmt.execute(licitacion["titulo"], licitacion["actualizado"], licitacion["resumen"], licitacion["idlicitacion"], licitacion["url"], licitacion["contratante"], licitacion["urlcontratante"], licitacion["estado"], licitacion["valorestimado"], licitacion["importetotal"], licitacion["importetotalsinimpuestos"], licitacion["clasificacion"], licitacion["localizacion"], licitacion["fechalimite"], licitacion["horalimite"])
+                except Exception as err:
+                    iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
         return "Success"
     except Exception as err:
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "VectorizePatient", repr(err))
         return "Error"
 }
 
-Method GenerateEmbeddings() As %String [ Language = python ]
+Method GenerateEmbeddings(table As %String) As %String [ Language = python ]
 {
     import iris
     import os
@@ -133,7 +171,7 @@ Method GenerateEmbeddings() As %String [ Language = python ]
 
     flagLoop = True
     while flagLoop:
-        st = iris.sql.prepare("SELECT IdLicitacion, Titulo FROM INQUISIDOR_Object.LicitacionTemp WHERE TituloVectorizado is null ORDER BY ID ASC ")
+        st = iris.sql.prepare(f'SELECT IdLicitacion, Titulo FROM {table} WHERE TituloVectorizado is null ORDER BY ID ASC ')
         resultSet = st.execute()
         df = resultSet.dataframe()
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Iniciando vectorización")
@@ -143,7 +181,7 @@ Method GenerateEmbeddings() As %String [ Language = python ]
 
             df['titulovectorizado'] = embeddings.tolist()
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Iniciando inserción")
-            stmt = iris.sql.prepare("UPDATE INQUISIDOR_Object.LicitacionTemp SET TituloVectorizado = TO_VECTOR(?,DECIMAL) WHERE IdLicitacion = ?")
+            stmt = iris.sql.prepare(f'UPDATE {table} SET TituloVectorizado = TO_VECTOR(?,DECIMAL) WHERE IdLicitacion = ?')
             for index, row in df.iterrows():
                 rs = stmt.execute(str(row['titulovectorizado']), row['idlicitacion'])
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "GenerateEmbeddings", "Inserción concluida")

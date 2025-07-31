@@ -12,10 +12,12 @@ import { ContratanteChartsComponent } from '../contratante-charts/contratante-ch
 import { MainDashboardComponent } from '../main-dashboard/main-dashboard.component';
 import { StorageService } from '../services/storage.service';
 import { AuthService } from '../services/auth.service';
+import { MainPublishedComponent } from '../main-published/main-published.component';
 
 @Component({
   selector: 'app-home',
   imports: [MainListComponent,
+    MainPublishedComponent,
     MainChartsComponent,
     ContratanteChartsComponent,
     MainDashboardComponent,

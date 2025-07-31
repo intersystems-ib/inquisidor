@@ -19,6 +19,7 @@ XData UrlMap [ XMLNamespace = "https://www.intersystems.com/urlmap" ]
     <Route Url="/getStatisticsContractors" Method="POST" Call="GetStatisticsContractors" />
     <Route Url="/getYears" Method="GET" Call="GetYears" />
     <Route Url="/getCPV" Method="GET" Call="GetCPV" />
+    <Route Url="/getPublished" Method="POST" Call="GetPublished" />
 </Routes>
 }
 
@@ -489,6 +490,111 @@ ClassMethod GetDashboardStatistics() As %Status
         set tempStream = ##class(%Stream.TmpCharacter).%New()
         do results.%ToJSON(tempStream)
         write tempStream.Read()
+
+    } Catch (ex) {
+        Do ##class(%REST.Impl).%SetStatusCode("400")
+        Do ##class(%REST.Impl).%WriteResponse(ex.DisplayString())
+    }
+    Quit $$$OK
+}
+
+ClassMethod GetPublished() As %Status
+{
+    set query = ""
+    Try {
+        If '##class(%REST.Impl).%CheckAccepts("application/json") Do ##class(%REST.Impl).%ReportRESTError(..#HTTP406NOTACCEPTABLE,$$$ERROR($$$RESTBadAccepts)) Quit
+        
+        // Reading the body of the http call with the person data
+        
+        set dynamicBody = {}.%FromJSON(%request.Content)
+
+        set filtros = dynamicBody.%Get("filtros")
+        set whereList = ""
+        
+         if ($ISOBJECT(filtros)) {
+            set iterCPV = filtros.cpvs.%GetIterator()
+            set stringContratante = ""
+            set stringCPV = ""
+            set iterContratante = filtros.contratantes.%GetIterator()
+            set stringContratante = ""
+            while iterContratante.%GetNext(.keyContratante, .valueContratante) {
+                set stringContratante = stringContratante_"|"_valueContratante
+            }
+            set stringCPV = ""
+            while iterCPV.%GetNext(.keyCPV, .valueCPV) {
+                set stringCPV = stringCPV_"|"_valueCPV.Code
+            }
+            
+            if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 1)) {
+                set description = ..GetEncoding(filtros.titulo)
+                Set tArgs($i(tArgs)) = description
+
+                set sql = 
+                    "SELECT * FROM (SELECT %ID, Contratante, TO_CHAR(Actualizado,'YYYY-MM-DD') As Actualizado, TO_CHAR(FechaLimite,'YYYY-MM-DD') As FechaLimite, HoraLimite, Titulo, VECTOR_DOT_PRODUCT(TO_VECTOR(?,DECIMAL), TituloVectorizado) As Similitud, URL, ImporteTotal FROM Inquisidor_Object.LicitacionPub "
+                set endSQL = ")"_          
+                    "WHERE Similitud > 0.5 "_
+                    "ORDER BY Similitud DESC"
+            }
+            else {
+                set sql =
+                    "SELECT %ID, Contratante, TO_CHAR(Actualizado,'YYYY-MM-DD') As Actualizado, TO_CHAR(FechaLimite,'YYYY-MM-DD') As FechaLimite, HoraLimite, Titulo, '1' As Similitud, URL, ImporteTotal FROM Inquisidor_Object.LicitacionPub "         
+                set endSQL = " ORDER BY FechaLimite ASC"
+            }
+            
+            set generalCondition = 0
+
+            if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 0)) {
+                Set whereList = whereList_$ListBuild("%ID %FIND search_index(IndexTitulo, ?)")
+                Set tArgs($i(tArgs)) = filtros.titulo
+                Set generalCondition = 1
+            }
+
+            if (stringContratante '= "") {
+                Set whereList = whereList_$ListBuild("Contratante %INLIST ?")
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringContratante, "|")
+                Set generalCondition = 1
+            }
+
+            if (stringCPV '= "") {
+                Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
+                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV, "|")
+                Set generalCondition = 1
+            }
+            if (generalCondition = 0) {
+                set query = sql_" "_$LISTTOSTRING(whereList," AND ")_" "_endSQL
+            }
+            else {
+                set query = sql_"WHERE "_$LISTTOSTRING(whereList," AND ")_" "_endSQL
+            }            
+
+            set statement = ##class(%SQL.Statement).%New()
+                    $$$ThrowOnError(statement.%Prepare(query))
+            set rs = statement.%Execute(tArgs...)
+        }
+        set array = []
+        while rs.%Next() {
+            do array.%Push({
+                    "Id": (rs.%Get("ID")),
+                    "contratante": (rs.%Get("Contratante")),
+                    "actualizado": (rs.%Get("Actualizado")),
+                    "fechalimite": (rs.%Get("FechaLimite")),
+                    "horalimite": (rs.%Get("HoraLimite")),
+                    "importe": (rs.%Get("ImporteTotal")),
+                    "titulo": (rs.%Get("Titulo")),
+                    "similitud": (rs.%Get("Similitud")),
+                    "URL": (rs.%Get("URL"))
+                })
+        }
+        set %response.Status = ..#HTTP200OK
+        set tempStream = ##class(%Stream.TmpCharacter).%New()
+        do array.%ToJSON(tempStream)
+        // w tempStream.Read(tempStream.SizeGet())
+        set len = tempStream.SizeGet()
+        While len > 0 {
+            set line=tempStream.Read($S(len>32656:32656,1:len))
+            set len=len-$length(line)
+            write line
+        }
 
     } Catch (ex) {
         Do ##class(%REST.Impl).%SetStatusCode("400")

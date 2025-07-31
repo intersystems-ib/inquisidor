@@ -62,6 +62,11 @@ ClassMethod ConnectAndDownload(inboundZipPath As %String) [ Language = python ]
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", 'Archivo ZIP eliminado.')
         else:
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", f'Error al descargar el archivo. Código HTTP: {response.status_code}')
+        stmt = iris.sql.prepare("DELETE FROM INQUISIDOR_Object.LicitacionPubTemp WHERE FechaLimite < CURRENT_DATE")
+        try:
+            rs = stmt.execute()
+        except Exception as err:
+            iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
     except Exception as err:
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", repr(err))
     return 1
