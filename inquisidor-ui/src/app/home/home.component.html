@@ -21,7 +21,11 @@
         <button mat-icon-button (click)="toggleSidenav(sidenav)">
             <mat-icon class="white-icon">menu</mat-icon>
         </button>
-        <span class="ms-3">Inquisidor de licitación pública</span>
+        <span class="ms-3" *ngIf="show === ''">Inquisidor de licitación pública</span>
+        <span class="ms-3" *ngIf="show === 'contratante-charts'">Análisis de licitadores</span>
+        <span class="ms-3" *ngIf="show === 'main-charts'">Análisis de adjudicatarios</span>
+        <span class="ms-3" *ngIf="show === 'main-list'">Licitaciones adjudicadas</span>
+        <span class="ms-3" *ngIf="show === 'main-published'">Licitaciones publicadas</span>
         </mat-toolbar>
 
         <div class="main-content">            
