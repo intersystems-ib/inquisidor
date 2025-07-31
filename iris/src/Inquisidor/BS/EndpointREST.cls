@@ -544,7 +544,7 @@ ClassMethod GetPublished() As %Status
             set generalCondition = 0
 
             if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 0)) {
-                Set whereList = whereList_$ListBuild("%ID %FIND search_index(IndexTitulo, ?)")
+                Set whereList = whereList_$ListBuild("%ID %FIND search_index(IndexTituloPub, ?)")
                 Set tArgs($i(tArgs)) = filtros.titulo
                 Set generalCondition = 1
             }
