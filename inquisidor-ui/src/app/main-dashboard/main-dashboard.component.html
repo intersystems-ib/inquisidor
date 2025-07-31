@@ -1,9 +1,17 @@
 <div class="dashboard-grid" *ngIf="!cargando">
     <div class="section welcome-container"> 
       <div class="cards-container">
+        <mat-card class="card-option" (click)="optionSelected('main-published')">
+          <img mat-card-image src="/publicado.jpg" alt="Buscar licitación">
+          <mat-card-title>Buscar licitación</mat-card-title>
+          <mat-card-content>
+            <p>Búsqueda detallada de licitaciones publicadas</p>
+          </mat-card-content>
+        </mat-card>
+        
         <mat-card class="card-option" (click)="optionSelected('main-list')">
           <img mat-card-image src="/licitaciones.jpg" alt="Crear Licitación">
-          <mat-card-title>Buscar licitación</mat-card-title>
+          <mat-card-title>Buscar adjudicación</mat-card-title>
           <mat-card-content>
             <p>Búsqueda detallada de licitaciones adjudicadas</p>
           </mat-card-content>
@@ -42,6 +50,7 @@
         </ngx-charts-line-chart>
       </div>      
   </div>
+</div>
 
   <div class="overlay-cargando" *ngIf="cargando">
     <div class="spinner-wrapper">
