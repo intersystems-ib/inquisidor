@@ -22,6 +22,18 @@ Method OnTask() As %Status
         set ^LASTZIP = currentDate
     }
     
+    set sqlDelete = "DELETE FROM INQUISIDOR_Object.LicitacionPubTemp WHERE FechaLimite < CURRENT_DATE"
+    set statementDelete = ##class(%SQL.Statement).%New()
+    set statusDelete = statementDelete.%Prepare(sqlDelete)
+    if ($$$ISOK(statusDelete)) {
+        set resultSetDelete = statementDelete.%Execute()
+        set sc = statusDelete
+        $$$TRACE("Eliminadas licitaciones pasadas")
+    }
+    else {
+        set sc = statusDelete
+        $$$TRACE("Error eliminando licitaciones pasadas")
+    }
     
     $$$TRACE("Finishing connection")
 
@@ -62,11 +74,6 @@ ClassMethod ConnectAndDownload(inboundZipPath As %String) [ Language = python ]
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", 'Archivo ZIP eliminado.')
         else:
             iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", f'Error al descargar el archivo. Código HTTP: {response.status_code}')
-        stmt = iris.sql.prepare("DELETE FROM INQUISIDOR_Object.LicitacionPubTemp WHERE FechaLimite < CURRENT_DATE")
-        try:
-            rs = stmt.execute()
-        except Exception as err:
-            iris.cls("Ens.Util.Log").LogInfo("Inquisidor.BP.XMLToLicitacion", "ParseXML", repr(err))
     except Exception as err:
         iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", repr(err))
     return 1
