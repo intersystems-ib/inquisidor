@@ -22,7 +22,7 @@ Method OnTask() As %Status
         set ^LASTZIP = currentDate
     }
     
-    set sqlDelete = "DELETE FROM INQUISIDOR_Object.LicitacionPubTemp WHERE FechaLimite < CURRENT_DATE"
+    set sqlDelete = "DELETE FROM INQUISIDOR_Object.LicitacionPub WHERE FechaLimite < CURRENT_DATE"
     set statementDelete = ##class(%SQL.Statement).%New()
     set statusDelete = statementDelete.%Prepare(sqlDelete)
     if ($$$ISOK(statusDelete)) {
