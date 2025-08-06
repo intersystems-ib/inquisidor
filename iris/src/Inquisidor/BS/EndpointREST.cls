@@ -91,8 +91,17 @@ ClassMethod GetTenders() As %Status
                 set stringContratante = stringContratante_"|"_valueContratante
             }
             set stringCPV = ""
+            set stringCPVConditions = ""
             while iterCPV.%GetNext(.keyCPV, .valueCPV) {
+                if (stringCPVConditions '= ""){
+                    set stringCPVConditions = stringCPVConditions_" OR "
+                }
                 set stringCPV = stringCPV_"|"_valueCPV.Code
+                SET maxValueCPV=$EXTRACT(valueCPV.Code,1,1)_$REPLACE(valueCPV.Code, "0", "9", 2)
+                set stringCPVConditions = stringCPVConditions_"Clasificacion BETWEEN "_valueCPV.Code_" AND "_maxValueCPV
+            }
+            if (stringCPVConditions '= "") {
+                set stringCPVConditions = "("_stringCPVConditions_")"
             }
             
             if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 1)) {
@@ -131,9 +140,10 @@ ClassMethod GetTenders() As %Status
                 Set generalCondition = 1
             }
 
-            if (stringCPV '= "") {
-                Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
-                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV, "|")
+            if (stringCPVConditions '= "") {
+                // Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
+                // Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV, "|")
+                Set whereList = whereList_$LISTBUILD(stringCPVConditions)
                 Set generalCondition = 1
             }
             if (generalCondition = 0) {
@@ -521,10 +531,18 @@ ClassMethod GetPublished() As %Status
                 set stringContratante = stringContratante_"|"_valueContratante
             }
             set stringCPV = ""
+            set stringCPVConditions = ""
             while iterCPV.%GetNext(.keyCPV, .valueCPV) {
+                if (stringCPVConditions '= ""){
+                    set stringCPVConditions = stringCPVConditions_" OR "
+                }
                 set stringCPV = stringCPV_"|"_valueCPV.Code
+                SET maxValueCPV=$EXTRACT(valueCPV.Code,1,1)_$REPLACE(valueCPV.Code, "0", "9", 2)
+                set stringCPVConditions = stringCPVConditions_"Clasificacion BETWEEN "_valueCPV.Code_" AND "_maxValueCPV
             }
-            
+            if (stringCPVConditions '= "") {
+                set stringCPVConditions = "("_stringCPVConditions_")"
+            }
             if ((filtros.titulo '= "") && (filtros.busquedaVectorial = 1)) {
                 set description = ..GetEncoding(filtros.titulo)
                 Set tArgs($i(tArgs)) = description
@@ -555,9 +573,10 @@ ClassMethod GetPublished() As %Status
                 Set generalCondition = 1
             }
 
-            if (stringCPV '= "") {
-                Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
-                Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV, "|")
+            if (stringCPVConditions '= "") {
+                // Set whereList = whereList_$ListBuild("Clasificacion %INLIST ?")
+                // Set tArgs($i(tArgs)) = $LISTFROMSTRING(stringCPV, "|")
+                Set whereList = whereList_$LISTBUILD(stringCPVConditions)
                 Set generalCondition = 1
             }
             if (generalCondition = 0) {
