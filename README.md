@@ -70,7 +70,8 @@ Now you can check the frontend:
 * From **Buscar adjudicación** you have access to all the finished public tenders with information about the winners.
   ![image](https://github.com/intersystems-ib/inquisidor/blob/main/assets/winners.png)
 
-* And you can compare and analyze the publishers and winners of public tender along the time from **Analisis de adjudicatarios** and **Analisis de licitadores** menus
+* And you can compare and analyze the publishers and winners of public tender along the time from **Analisis de adjudicatarios** and **Analisis de licitadores** menus:
+
   Publishers:
   ![image](https://github.com/intersystems-ib/inquisidor/blob/main/assets/publisher_analisis.png)
 
