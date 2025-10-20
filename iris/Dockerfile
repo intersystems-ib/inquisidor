@@ -1,4 +1,4 @@
-ARG IMAGE=containers.intersystems.com/intersystems/iris:latest-em
+ARG IMAGE=containers.intersystems.com/intersystems/iris-community:latest-em
 FROM $IMAGE
 
 USER root
@@ -40,8 +40,8 @@ ENV ISC_CPF_MERGE_FILE=/iris.cpf
 
 SHELL ["/irissession.sh"]
 
-COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/iris.key /usr/irissys/mgr
-RUN chmod +x /usr/irissys/mgr/iris.key
+# COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/iris.key /usr/irissys/mgr
+# RUN chmod +x /usr/irissys/mgr/iris.key
 
 RUN \
 zn "%SYS" \
