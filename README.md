@@ -50,6 +50,7 @@ Developed on Angular provides an easy to use user interface sending REST calls t
 docker-compose up -d
 ```
 Automatically an IRIS instance will be deployed and a production will be configured to import atom files with public tenders (you can find an example in folder **iris/shared/example**). If you want to include a automatic process to import files from the official web page you only need to create a new Business Service **Inquisidor.BS.ImportZipFile** and configure the folder to extract the files from the imported ZIP (the same that the path defined for **Licitaciones_IN** Business Service).
+
 ![image](https://github.com/intersystems-ib/inquisidor/blob/main/assets/automatic_import.png)
 
 * Open the [Management Portal](https://localhost:8443/csp/sys/%25CSP.Portal.Home.zen?$NAMESPACE=INQUISIDOR).
