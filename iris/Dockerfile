@@ -1,4 +1,4 @@
-ARG IMAGE=containers.intersystems.com/intersystems/iris-community:latest-em
+ARG IMAGE=containers.intersystems.com/intersystems/iris:latest-em
 FROM $IMAGE
 
 USER root
@@ -38,23 +38,11 @@ RUN chmod +x /init.sql
 
 ENV ISC_CPF_MERGE_FILE=/iris.cpf
 
-SHELL ["/irissession.sh"]
+COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/iris.key /usr/irissys/mgr
+RUN chmod +x /usr/irissys/mgr/iris.key
 
-# COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /iris/iris.key /usr/irissys/mgr
-# RUN chmod +x /usr/irissys/mgr/iris.key
+COPY /iris/iris.script /tmp/iris.script
 
-RUN \
-zn "%SYS" \
-do ##class(%SYSTEM.License).Upgrade() \
-do ##class(SYS.Container).QuiesceForBundling() \
-do ##class(Security.Users).UnExpireUserPasswords("*") \
-set sc=##class(%SYSTEM.OBJ).Load("/opt/irisapp/DemoSetup.Utilities.cls","ck") \
-set helper=##class(DemoSetup.Utilities).%New() \ 
-do helper.EnableSSLSuperServer() \
-do ##class(Security.Applications).Import("/ApplicationInquisidor.xml",.n) \
-zn "INQUISIDOR" \
-set sc = $SYSTEM.OBJ.LoadDir("/opt/irisapp/src/Inquisidor", "ck", , 1) \
-do ##class(%SYSTEM.SQL.Schema).ImportDDL("/init.sql","/iris-shared/logfile.log","IRIS") \
-set production = "Inquisidor.Production" \
-set ^Ens.Configuration("csp","LastProduction") = production \
-do ##class(Ens.Director).SetAutoStart(production) \
+RUN iris start IRIS \
+	&& iris session IRIS < /tmp/iris.script \
+    && iris stop IRIS quietly
