@@ -15,7 +15,9 @@ Method OnTask() As %Status
         set ^LASTZIP = "0000-00-00"
     }
     if ($GET(^LASTZIP) '= currentDate){
-        do ..ConnectAndDownload(..InboundZipPath)
+        do ..ConnectAndDownload(..InboundZipPath, "https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_643/licitacionesPerfilesContratanteCompleto3")
+        do ..ConnectAndDownload(..InboundZipPath, "https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_1044/PlataformasAgregadasSinMenores")
+        do ..ConnectAndDownload(..InboundZipPath, "https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_1043/contratosMenoresPerfilesContratantes")
         set msg = ##class(Inquisidor.Message.LicitacionRequest).%New()
         set tSC=..BusinessHost.ProcessInput(msg)
 
@@ -40,7 +42,7 @@ Method OnTask() As %Status
     Quit tSC
 }
 
-ClassMethod ConnectAndDownload(inboundZipPath As %String) [ Language = python ]
+ClassMethod ConnectAndDownload(inboundZipPath As %String, url As %String) [ Language = python ]
 {
     import requests
     import zipfile
@@ -51,11 +53,10 @@ ClassMethod ConnectAndDownload(inboundZipPath As %String) [ Language = python ]
     try :
         fecha = datetime.now()
         sufijo = fecha.strftime('%Y%m')
-        url = f'https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_643/licitacionesPerfilesContratanteCompleto3_{sufijo}.zip'
-        iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", url)
-        zip_path = f'licitacionesPerfilesContratanteCompleto3_{sufijo}.zip'
+        iris.cls("Ens.Util.Log").LogInfo("Inquisidor.Adapter.ZipFileInboundAdapter", "ConnectAndDownload", url+f'_{sufijo}.zip')
+        zip_path = f'licitacionesPerfilesContratanteCompleto3_{sufijo}.zip'        
 
-        response = requests.get(url, stream=True)
+        response = requests.get(url+f'_{sufijo}.zip', stream=True)
 
         if response.status_code == 200:
             with open(zip_path, 'wb') as file:
