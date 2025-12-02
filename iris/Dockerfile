@@ -6,7 +6,25 @@ USER root
 WORKDIR /opt/irisapp
 RUN chown -R irisowner:irisowner /opt/irisapp
 
-RUN apt-get update && apt-get install -y python3
+
+# 1. Paquetes de sistema necesarios
+RUN apt-get update && \
+    apt-get install -y \
+        python3 \
+        python3-pip \
+        python3-dev \
+        build-essential \
+        git && \
+    rm -rf /var/lib/apt/lists/*
+
+# 2. Actualizar pip (importante para wheels recientes)
+RUN python3 -m pip install --upgrade pip
+
+# 3. Instalar PyTorch explícitamente (si tu imagen es x86_64 Linux)
+#    Si esto falla, es casi seguro que tu arquitectura no está soportada por las wheels de PyTorch.
+RUN pip3 install --no-cache-dir \
+    --index-url https://download.pytorch.org/whl/cpu \
+    "torch==2.3.1"
 
 # install required packages
 COPY --chown=$ISC_PACKAGE_MGRUSER:$ISC_PACKAGE_IRISGROUP /requirements.txt /
