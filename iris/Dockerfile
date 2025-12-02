@@ -18,7 +18,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # 2. Actualizar pip (importante para wheels recientes)
-RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip setuptools wheel
 
 # 3. Instalar PyTorch explícitamente (si tu imagen es x86_64 Linux)
 #    Si esto falla, es casi seguro que tu arquitectura no está soportada por las wheels de PyTorch.
